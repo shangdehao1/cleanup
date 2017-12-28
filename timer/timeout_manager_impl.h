@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _SOFA_PBRPC_TIMEOUT_MANAGER_IMPL_H_
-#define _SOFA_PBRPC_TIMEOUT_MANAGER_IMPL_H_
+#ifndef TIMEOUT_MANAGER_IMPL_H_
+#define TIMEOUT_MANAGER_IMPL_H_
 
 #include <vector>
 

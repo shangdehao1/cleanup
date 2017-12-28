@@ -1,12 +1,12 @@
-#ifndef _SOFA_PBRPC_TIMER_WORKER_H_
-#define _SOFA_PBRPC_TIMER_WORKER_H_
+#ifndef TIMER_WORKER_H_
+#define TIMER_WORKER_H_
 
-#include <sofa/pbrpc/common_internal.h>
+//#include <sofa/pbrpc/common_internal.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-class TimerWorker : public sofa::pbrpc::enable_shared_from_this<TimerWorker>
+class TimerWorker : public hdcs::networking::enable_shared_from_this<TimerWorker>
 {
 public:
     typedef boost::function<void(const PTime& /* now */)> WorkRoutine;

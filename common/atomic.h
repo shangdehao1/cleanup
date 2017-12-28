@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _SOFA_PBRPC_ATOMIC_H_
-#define _SOFA_PBRPC_ATOMIC_H_
+#ifndef ATOMIC_H_
+#define ATOMIC_H_
 
 #if !defined(__i386__) && !defined(__x86_64__)
 #error    "Arch not supprot!"

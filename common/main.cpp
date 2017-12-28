@@ -1,7 +1,5 @@
 #include <iostream>
-
-#include "./smart_ptr/smart_ptr.hpp"
-#include "./lock/locks.h"
+#include "common.h"
 
 
 int main(){

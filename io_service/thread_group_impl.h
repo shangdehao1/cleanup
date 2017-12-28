@@ -8,11 +8,11 @@
 #include <boost/bind.hpp>
 
 #include "io_service.h"
-#include "ext_closure.h"
-#include <sofa/pbrpc/counter.h>
+//#include "ext_closure.h"
+#include "../common/common.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 // Defined in this file.
 class ThreadGroupImpl;
@@ -257,12 +257,10 @@ private:
     pthread_t* _threads;
     ThreadParam* _thread_params;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ThreadGroupImpl);
+    //DISALLOW_EVIL_CONSTRUCTORS(ThreadGroupImpl);
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace
+} // namespace
 
-#endif // _SOFA_PBRPC_THREAD_GROUP_IMPL_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif 

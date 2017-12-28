@@ -2,24 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _SOFA_PBRPC_COMMON_H_
-#define _SOFA_PBRPC_COMMON_H_
+#ifndef HDCS_NERWORKINF_COMMON_H_
+#define HDCS_NETWORKINF_COMMON_H_
 
 #include <stdarg.h>
-#include <google/protobuf/stubs/common.h>
 
-#include <sofa/pbrpc/smart_ptr/smart_ptr.hpp>
+//#include <google/protobuf/stubs/common.h>
+
+#include "./smart_ptr/smart_ptr.hpp"
+#include "./lock/locks.h"
+#include "counter.h"
+#include "atomic.h"
+#include "error_code.h"
 
 namespace std {}
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-#define SOFA_PBRPC_VERSION "1.1.1"
+#define HDCS_NETWORKING_VERSION "1.1.1"
 
-const char* compile_info();
+//const char* compile_info();
 
 /////////////// types /////////////
+/*
 typedef ::google::protobuf::uint uint;
 
 typedef ::google::protobuf::int8  int8;
@@ -38,8 +44,9 @@ static const int64 kint64max = ::google::protobuf::kint64max;
 static const int64 kint64min = ::google::protobuf::kint64min;
 static const uint32 kuint32max = ::google::protobuf::kuint32max;
 static const uint64 kuint64max = ::google::protobuf::kuint64max;
-
+*/
 /////////////// util macros /////////////
+/*
 #define SOFA_PBRPC_STR_I(var) #var
 #define SOFA_PBRPC_STR(var) SOFA_PBRPC_STR_I(var)
 
@@ -115,10 +122,8 @@ void log_handler(LogLevel level, const char* filename, int line, const char *fmt
 #define SCHECK_GT(a, b) SCHECK((a) >  (b))
 #define SCHECK_GE(a, b) SCHECK((a) >= (b))
 #endif
-
-} // namespace pbrpc
-} // namespace sofa
+*/
+} // namespace 
+} // namespace
 
 #endif // _SOFA_PBRPC_COMMON_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
