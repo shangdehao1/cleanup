@@ -1,8 +1,8 @@
-#include <sofa/pbrpc/thread_group.h>
-#include <sofa/pbrpc/thread_group_impl.h>
+#include "thread_group.h"
+#include "thread_group_impl.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 ThreadGroup::ThreadGroup(int thread_num)
 {
@@ -41,7 +41,6 @@ void ThreadGroup::post(ExtClosure<void()>* handle)
     _imp->post(handle);
 }
 
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} //
 
-/* vim: set ts=4 sw=4 sts=4 tw=100 */

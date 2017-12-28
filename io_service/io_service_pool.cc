@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <sofa/pbrpc/io_service_pool.h>
+#include "io_service_pool.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 IOServicePool::IOServicePool(std::size_t pool_size, 
         size_t pool_thread_num) 
@@ -32,7 +32,7 @@ bool IOServicePool::Run()
         _pool[i]->set_dest_func(_dest_func);
         if (!_pool[i]->start())
         {
-            SLOG(ERROR, "Start(): start work thread group failed");
+            //SLOG(ERROR, "Start(): start work thread group failed");
             return false;
         }
     }

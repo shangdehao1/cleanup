@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _SOFA_PBRPC_BINARY_IO_SERVICE_POOL_H_
-#define _SOFA_PBRPC_BINARY_IO_SERVICE_POOL_H_
+#ifndef IO_SERVICE_POOL_H_
+#define IO_SERVICE_POOL_H_
 
 #include <vector>
 
-#include <sofa/pbrpc/thread_group_impl.h>
+#include "thread_group_impl.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 class IOServicePool
 {
@@ -42,10 +42,10 @@ private:
     ThreadInitFunc _init_func;
     ThreadDestFunc _dest_func;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(IOServicePool);
+    //DISALLOW_EVIL_CONSTRUCTORS(IOServicePool);
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} // 
 
-#endif // _SOFA_PBRPC_BINARY_IO_SERVICE_POOL_H_
+#endif 

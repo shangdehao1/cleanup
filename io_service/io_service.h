@@ -1,7 +1,7 @@
 #ifndef IO_SERVICE_H_
 #define IO_SERVICE_H_
 
- // ATTENTION: we suppose that epoll is always supported on the platform.
+ // ATTENTION: suppose that epoll is always supported on the platform.
 
 #if __APPLE__
 #undef BOOST_ASIO_HAS_EPOLL
