@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _SOFA_PBRPC_THREAD_GROUP_H_
-#define _SOFA_PBRPC_THREAD_GROUP_H_
+#ifndef THREAD_GROUP_H_
+#define THREAD_GROUP_H_
 
-#include <sofa/pbrpc/common.h>
-#include <sofa/pbrpc/ext_closure.h>
+//#include <sofa/pbrpc/common.h>
+//#include <sofa/pbrpc/ext_closure.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 // Defined in this file.
 class ThreadGroup;
-typedef sofa::pbrpc::shared_ptr<ThreadGroup> ThreadGroupPtr;
+typedef hdcs::networking::shared_ptr<ThreadGroup> ThreadGroupPtr;
 
 // Defined in other files.
 class ThreadGroupImpl;
@@ -42,7 +42,7 @@ public:
     // It guarantees that the handler will not be called from inside this function.
     // The "handler" should be a self delete closure, which can be created through
     // NewClosure().
-    void post(google::protobuf::Closure* handler);
+   // void post(google::protobuf::Closure* handler);
 
     // Request the thread group to invoke the given handler.
     // The handler may be executed inside this function if the guarantee can be met.
@@ -59,7 +59,7 @@ public:
 private:
     sofa::pbrpc::shared_ptr<ThreadGroupImpl> _imp;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ThreadGroup);
+    //SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ThreadGroup);
 };
 
 } // namespace pbrpc

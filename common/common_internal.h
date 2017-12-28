@@ -9,77 +9,77 @@
 #include <boost/function.hpp>
 #include <memory>
 
-//#include <sofa/pbrpc/common.h>
+//#include <hdcs/networking/common.h>
 #include "atomic.h"
 #include "counter.h"
 #include "../controller/controller_impl.h"
-//#include <sofa/pbrpc/func_tracer.h>
-//#include <sofa/pbrpc/io_service.h>
-//#include <sofa/pbrpc/locks.h>
-//#include <sofa/pbrpc/ptime.h>
+//#include <hdcs/networking/func_tracer.h>
+//#include <hdcs/networking/io_service.h>
+//#include <hdcs/networking/locks.h>
+//#include <hdcs/networking/ptime.h>
 
 namespace hdcs {
 namespace networking {
 
 class ControllerImpl;
 typedef std::shared_ptr<ControllerImpl> RpcControllerImplPtr;
-typedef sofa::pbrpc::weak_ptr<RpcControllerImpl> RpcControllerImplWPtr;
+typedef hdcs::networking::weak_ptr<RpcControllerImpl> RpcControllerImplWPtr;
 /*
 class RpcChannelImpl;
-typedef sofa::pbrpc::shared_ptr<RpcChannelImpl> RpcChannelImplPtr;
+typedef hdcs::networking::shared_ptr<RpcChannelImpl> RpcChannelImplPtr;
 
 class RpcClientImpl;
-typedef sofa::pbrpc::shared_ptr<RpcClientImpl> RpcClientImplPtr;
+typedef hdcs::networking::shared_ptr<RpcClientImpl> RpcClientImplPtr;
 
 class RpcServerImpl;
-typedef sofa::pbrpc::shared_ptr<RpcServerImpl> RpcServerImplPtr;
-typedef sofa::pbrpc::weak_ptr<RpcServerImpl> RpcServerImplWPtr;
+typedef hdcs::networking::shared_ptr<RpcServerImpl> RpcServerImplPtr;
+typedef hdcs::networking::weak_ptr<RpcServerImpl> RpcServerImplWPtr;
 
 class RpcClientStream;
-typedef sofa::pbrpc::shared_ptr<RpcClientStream> RpcClientStreamPtr;
-typedef sofa::pbrpc::weak_ptr<RpcClientStream> RpcClientStreamWPtr;
+typedef hdcs::networking::shared_ptr<RpcClientStream> RpcClientStreamPtr;
+typedef hdcs::networking::weak_ptr<RpcClientStream> RpcClientStreamWPtr;
 
 class RpcServerStream;
-typedef sofa::pbrpc::shared_ptr<RpcServerStream> RpcServerStreamPtr;
-typedef sofa::pbrpc::weak_ptr<RpcServerStream> RpcServerStreamWPtr;
+typedef hdcs::networking::shared_ptr<RpcServerStream> RpcServerStreamPtr;
+typedef hdcs::networking::weak_ptr<RpcServerStream> RpcServerStreamWPtr;
 
 class RpcListener;
-typedef sofa::pbrpc::shared_ptr<RpcListener> RpcListenerPtr;
+typedef hdcs::networking::shared_ptr<RpcListener> RpcListenerPtr;
 
 class TimerWorker;
-typedef sofa::pbrpc::shared_ptr<TimerWorker> TimerWorkerPtr;
+typedef hdcs::networking::shared_ptr<TimerWorker> TimerWorkerPtr;
 
 class RpcTimeoutManager;
-typedef sofa::pbrpc::shared_ptr<RpcTimeoutManager> RpcTimeoutManagerPtr;
+typedef hdcs::networking::shared_ptr<RpcTimeoutManager> RpcTimeoutManagerPtr;
 
 class ThreadGroup;
-typedef sofa::pbrpc::shared_ptr<ThreadGroup> ThreadGroupPtr;
+typedef hdcs::networking::shared_ptr<ThreadGroup> ThreadGroupPtr;
 
 class ServicePool;
-typedef sofa::pbrpc::shared_ptr<ServicePool> ServicePoolPtr;
-typedef sofa::pbrpc::weak_ptr<ServicePool> ServicePoolWPtr;
+typedef hdcs::networking::shared_ptr<ServicePool> ServicePoolPtr;
+typedef hdcs::networking::weak_ptr<ServicePool> ServicePoolWPtr;
 
 class FlowController;
-typedef sofa::pbrpc::shared_ptr<FlowController> FlowControllerPtr;
+typedef hdcs::networking::shared_ptr<FlowController> FlowControllerPtr;
 
 class WaitEvent;
-typedef sofa::pbrpc::shared_ptr<WaitEvent> WaitEventPtr;
+typedef hdcs::networking::shared_ptr<WaitEvent> WaitEventPtr;
 
 class IOServicePool;
-typedef sofa::pbrpc::shared_ptr<IOServicePool> IOServicePoolPtr;
+typedef hdcs::networking::shared_ptr<IOServicePool> IOServicePoolPtr;
 
 class WebService;
-typedef sofa::pbrpc::shared_ptr<WebService> WebServicePtr;
+typedef hdcs::networking::shared_ptr<WebService> WebServicePtr;
 #define SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(name_) \
-    extern sofa::pbrpc::AtomicCounter g_sofa_counter_##name_
+    extern hdcs::networking::AtomicCounter g_hdcs_counter_##name_
 #define SOFA_PBRPC_DEFINE_RESOURCE_COUNTER(name_) \
-    sofa::pbrpc::AtomicCounter g_sofa_counter_##name_(0)
+    hdcs::networking::AtomicCounter g_hdcs_counter_##name_(0)
 #define SOFA_PBRPC_INC_RESOURCE_COUNTER(name_) \
-    ++g_sofa_counter_##name_
+    ++g_hdcs_counter_##name_
 #define SOFA_PBRPC_DEC_RESOURCE_COUNTER(name_) \
-    --g_sofa_counter_##name_
+    --g_hdcs_counter_##name_
 #define SOFA_PBRPC_GET_RESOURCE_COUNTER(name_) \
-    static_cast<int>(g_sofa_counter_##name_)
+    static_cast<int>(g_hdcs_counter_##name_)
 
 //SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(RpcByteStream);
 //SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(RpcListener);
