@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,11 +6,9 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#include <sofa/pbrpc/smart_ptr/scoped_ptr.hpp>
-#include <sofa/pbrpc/smart_ptr/scoped_array.hpp>
-#include <sofa/pbrpc/smart_ptr/weak_ptr.hpp>
-#include <sofa/pbrpc/smart_ptr/shared_ptr.hpp>
-#include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
-#include <sofa/pbrpc/smart_ptr/owner_less.hpp>
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#include "scoped_ptr.hpp"
+#include "scoped_array.hpp"
+#include "weak_ptr.hpp"
+#include "shared_ptr.hpp"
+#include "enable_shared_from_this.hpp"
+#include "owner_less.hpp"

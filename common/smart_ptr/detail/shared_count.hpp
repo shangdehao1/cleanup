@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,19 +6,19 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SHARED_COUNT_
-#define _SOFA_PBRPC_SMART_PTR_DETAIL_SHARED_COUNT_
+#ifndef SMART_PTR_DETAIL_SHARED_COUNT_
+#define SMART_PTR_DETAIL_SHARED_COUNT_
 
-#include <sofa/pbrpc/smart_ptr/checked_delete.hpp>
-#include <sofa/pbrpc/smart_ptr/bad_weak_ptr.hpp>
-#include <sofa/pbrpc/smart_ptr/detail/sp_counted_base.hpp>
-#include <sofa/pbrpc/smart_ptr/detail/sp_counted_impl.hpp>
+#include "../checked_delete.hpp"
+#include "../bad_weak_ptr.hpp"
+#include "sp_counted_base.hpp"
+#include "sp_counted_impl.hpp"
 
 #include <functional>       // std::less
 #include <new>              // std::bad_alloc
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 namespace detail {
 
 int const shared_count_id = 0x2C35F101;
@@ -58,7 +54,7 @@ public:
         }
         catch(...)
         {
-            sofa::pbrpc::checked_delete( p );
+            hdcs::networking::checked_delete( p );
             throw;
         }
 
@@ -301,7 +297,7 @@ inline shared_count::shared_count( weak_count const & r ): pi_( r.pi_ )
 {
     if( pi_ == 0 || !pi_->add_ref_lock() )
     {
-        throw sofa::pbrpc::bad_weak_ptr();
+        throw hdcs::networking::bad_weak_ptr();
     }
 }
 
@@ -313,10 +309,8 @@ inline shared_count::shared_count( weak_count const & r, sp_nothrow_tag ): pi_( 
     }
 }
 
-} // namespace detail
-} // namespace pbrpc
-} // namespace sofa
+} // namespace 
+} // namespace
+} // namespace
 
-#endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SHARED_COUNT_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif //

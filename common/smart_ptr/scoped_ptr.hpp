@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,13 +6,13 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_SCOPED_PTR_
-#define _SOFA_PBRPC_SMART_PTR_SCOPED_PTR_
+#ifndef SMART_PTR_SCOPED_PTR_
+#define SMART_PTR_SCOPED_PTR_
 
-#include <sofa/pbrpc/smart_ptr/checked_delete.hpp>
+#include "checked_delete.hpp"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 //  scoped_ptr mimics a built-in pointer except that it guarantees deletion
 //  of the object pointed to, either on destruction of the scoped_ptr or via
@@ -47,7 +43,7 @@ public:
 
     ~scoped_ptr() // never throws
     {
-        sofa::pbrpc::checked_delete( px );
+        hdcs::networking::checked_delete( px );
     }
 
     void reset(T * p = 0) // never throws
@@ -71,7 +67,7 @@ public:
     }
 
 // implicit conversion to "bool"
-#include <sofa/pbrpc/smart_ptr/detail/operator_bool.hpp>
+#include "./detail/operator_bool.hpp"
 
     void swap(scoped_ptr & b) // never throws
     {
@@ -93,9 +89,8 @@ template<class T> inline T * get_pointer(scoped_ptr<T> const & p)
     return p.get();
 }
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace 
+} // namespace
 
-#endif // _SOFA_PBRPC_SMART_PTR_SCOPED_PTR_
+#endif // 
 
-/* vim: set ts=4 sw=4 sts=4 tw=100 */

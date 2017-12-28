@@ -1,5 +1,5 @@
-#ifndef _SOFA_PBRPC_THREAD_GROUP_IMPL_H_
-#define _SOFA_PBRPC_THREAD_GROUP_IMPL_H_
+#ifndef THREAD_GROUP_IMPL_H_
+#define THREAD_GROUP_IMPL_H_
 
 #include <unistd.h>
 #include <pthread.h>
@@ -7,8 +7,8 @@
 
 #include <boost/bind.hpp>
 
-#include <sofa/pbrpc/io_service.h>
-#include <sofa/pbrpc/ext_closure.h>
+#include "io_service.h"
+#include "ext_closure.h"
 #include <sofa/pbrpc/counter.h>
 
 namespace sofa {

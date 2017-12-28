@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,15 +6,15 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_SCOPED_ARRAY_
-#define _SOFA_PBRPC_SMART_PTR_SCOPED_ARRAY_
+#ifndef SMART_PTR_SCOPED_ARRAY_
+#define SMART_PTR_SCOPED_ARRAY_
 
-#include <sofa/pbrpc/smart_ptr/checked_delete.hpp>
+#include "checked_delete.hpp"
 
 #include <cstddef> // for std::ptrdiff_t
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 //  scoped_array extends scoped_ptr to arrays. Deletion of the array pointed to
 //  is guaranteed, either on destruction of the scoped_array or via an explicit
@@ -48,7 +44,7 @@ public:
 
     ~scoped_array() // never throws
     {
-        sofa::pbrpc::checked_array_delete( px );
+        hdcs::networking::checked_array_delete( px );
     }
 
     void reset(T * p = 0) // never throws
@@ -67,7 +63,7 @@ public:
     }
 
 // implicit conversion to "bool"
-#include <sofa/pbrpc/smart_ptr/detail/operator_bool.hpp>
+#include "./detail/operator_bool.hpp"
 
     void swap(scoped_array & b) // never throws
     {
@@ -82,9 +78,7 @@ template<class T> inline void swap(scoped_array<T> & a, scoped_array<T> & b) // 
     a.swap(b);
 }
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace
+} // namespace
 
-#endif // _SOFA_PBRPC_SMART_PTR_SCOPED_ARRAY_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

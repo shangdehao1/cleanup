@@ -1,22 +1,10 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// This file is modified from boost.
-//
-// Copyright Beman Dawes 2002, 2006
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-// See library home page at http://www.boost.org/libs/system
-
-#ifndef _SOFA_PBRPC_SMART_PTR_OWNER_LESS_
-#define _SOFA_PBRPC_SMART_PTR_OWNER_LESS_
+#ifndef SMART_PTR_OWNER_LESS_
+#define SMART_PTR_OWNER_LESS_
 
 #include <functional>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
   template<typename T> class shared_ptr;
   template<typename T> class weak_ptr;
@@ -53,9 +41,7 @@ namespace pbrpc {
     public detail::generic_owner_less<weak_ptr<T>, shared_ptr<T> >
   {};
 
-} // namespace pbrpc
-} // namespace sofa
+} // name
+} // name
 
-#endif // _SOFA_PBRPC_SMART_PTR_OWNER_LESS_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

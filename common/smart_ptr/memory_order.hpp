@@ -1,20 +1,8 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+#ifndef SMART_PTR_MEMORY_ORDER_
+#define SMART_PTR_MEMORY_ORDER_
 
-// This file is modified from boost.
-//
-// Copyright Beman Dawes 2002, 2006
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-// See library home page at http://www.boost.org/libs/system
-
-#ifndef _SOFA_PBRPC_SMART_PTR_MEMORY_ORDER_
-#define _SOFA_PBRPC_SMART_PTR_MEMORY_ORDER_
-
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 //
 // Enum values are chosen so that code that needs to insert
@@ -43,9 +31,7 @@ enum memory_order
     memory_order_consume = 8
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} // 
 
-#endif // _SOFA_PBRPC_SMART_PTR_MEMORY_ORDER_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif 

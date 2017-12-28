@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,11 +6,11 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SP_CONVERTIBLE_
-#define _SOFA_PBRPC_SMART_PTR_DETAIL_SP_CONVERTIBLE_
+#ifndef SMART_PTR_DETAIL_SP_CONVERTIBLE_
+#define SMART_PTR_DETAIL_SP_CONVERTIBLE_
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 namespace detail {
 
 template< class Y, class T > struct sp_convertible
@@ -47,10 +43,8 @@ template< class Y, class T > struct sp_enable_if_convertible: public sp_enable_i
 {
 };
 
-} // namespace detail
-} // namespace pbrpc
-} // namespace sofa
+} // namespace
+} // namespace
+} // namespace 
 
-#endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SP_CONVERTIBLE_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif 

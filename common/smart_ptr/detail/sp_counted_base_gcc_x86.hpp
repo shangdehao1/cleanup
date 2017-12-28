@@ -10,13 +10,13 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_GCC_X86_
-#define _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_GCC_X86_
+#ifndef SMART_PTR_DETAIL_SP_COUNTED_BASE_GCC_X86_
+#define SMART_PTR_DETAIL_SP_COUNTED_BASE_GCC_X86_
 
 #include <typeinfo>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 namespace detail {
 
 inline int atomic_exchange_and_add( int * pw, int dv )
@@ -153,10 +153,8 @@ public:
     }
 };
 
-} // namespace detail
-} // namespace pbrpc
-} // namespace sofa
+} // namespace 
+} // namespace 
+} // namespace 
 
-#endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_GCC_X86_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif // 

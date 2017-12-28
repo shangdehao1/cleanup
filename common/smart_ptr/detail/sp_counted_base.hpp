@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,11 +6,9 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_
-#define _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_
+#ifndef SMART_PTR_DETAIL_SP_COUNTED_BASE_
+#define SMART_PTR_DETAIL_SP_COUNTED_BASE_
 
-#include <sofa/pbrpc/smart_ptr/detail/sp_counted_base_gcc_x86.hpp>
+#include "sp_counted_base_gcc_x86.hpp"
 
-#endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_BASE_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif //

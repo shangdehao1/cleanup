@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,13 +6,13 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SPINLOCK_PT_
-#define _SOFA_PBRPC_SMART_PTR_DETAIL_SPINLOCK_PT_
+#ifndef SMART_PTR_DETAIL_SPINLOCK_PT_
+#define SMART_PTR_DETAIL_SPINLOCK_PT_
 
 #include <pthread.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 namespace detail {
 
 class spinlock
@@ -67,12 +63,10 @@ public:
     };
 };
 
-} // namespace detail
-} // namespace pbrpc
-} // namespace sofa
+} // namespace
+} // namespace
+} // namespace
 
-#define SOFA_PBRPC_SMART_PTR_DETAIL_SPINLOCK_INIT { PTHREAD_MUTEX_INITIALIZER }
+#define HDCS_NETWORK_SMART_PTR_DETAIL_SPINLOCK_INIT { PTHREAD_MUTEX_INITIALIZER }
 
-#endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SPINLOCK_PT_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif //

@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 // This file is modified from boost.
 //
 // Copyright Beman Dawes 2002, 2006
@@ -10,18 +6,18 @@
 //
 // See library home page at http://www.boost.org/libs/system
 
-#ifndef _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_IMPL_
-#define _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_IMPL_
+#ifndef SMART_PTR_DETAIL_SP_COUNTED_IMPL_
+#define SMART_PTR_DETAIL_SP_COUNTED_IMPL_
 
-#include <sofa/pbrpc/smart_ptr/checked_delete.hpp>
-#include <sofa/pbrpc/smart_ptr/detail/sp_counted_base.hpp>
+#include "../checked_delete.hpp"
+#include "sp_counted_base.hpp"
 
 #include <memory>           // std::allocator
 #include <cstddef>          // std::size_t
 #include <typeinfo>         // std::type_info
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 namespace detail {
 
 template<class X> class sp_counted_impl_p: public sp_counted_base
@@ -43,7 +39,7 @@ public:
 
     virtual void dispose() // nothrow
     {
-        sofa::pbrpc::checked_delete( px_ );
+        hdcs::networking::checked_delete( px_ );
     }
 
     virtual void * get_deleter( std::type_info const & )
@@ -159,10 +155,8 @@ public:
     }
 };
 
-} // namespace detail
-} // namespace pbrpc
-} // namespace sofa
+} // namespace
+} // namespace
+} // namespace
 
-#endif // _SOFA_PBRPC_SMART_PTR_DETAIL_SP_COUNTED_IMPL_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif //
