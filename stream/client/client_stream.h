@@ -1,39 +1,30 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef CLIENT_STREAM_H_
 #define CLIENT_STREAM_H_
 
 #include <functional>
 #include <memory>
 #include <map>
+
+#include "../../common/error_code.h"
+#include "../../common/smart_ptr/networking_ptr.h"
 #include "client_message_stream.h"
-
-/*
-#include <sofa/pbrpc/rpc_message_stream.h>
-#include <sofa/pbrpc/rpc_controller_impl.h>
-#include <sofa/pbrpc/rpc_meta.pb.h>
-*/
-
+#include "../../controller/controller_impl.h"
+#include "../../data/message/meta.pb.h"
 
 namespace hdcs {
 namespace networking {
 
 class ClientStream;
-
-//typedef ClientStream* ClientStreamPtr; //TODO
-//typedef ControllerImpl* ClientStreamPtr; //TODO
+typedef ClientStream* ClientStreamPtr; 
 
 // Callback function when closed client stream.
 typedef std::function<void(
-        const ClientStreamPtr& /* stream */)> ClosedClientStreamCallback;
+        const ClientStreamPtr& )> ClosedClientStreamCallback;
 
 class ClientStream : public MessageStream<ControllerImplPtr>
 {
 public:
     ClientStream(IOService& io_service, const Endpoint& endpoint)
-        // parent class
         : MessageStream<ControllerImplPtr>(ROLE_TYPE_CLIENT, io_service, endpoint)
     {}
 
@@ -46,7 +37,7 @@ public:
             it->second->Done(HDCS_NETWORK_ERROR_CONNECTION_CLOSED, _error_message);
         }
     }
-/*
+
     // Set the callback function when closed stream.
     void set_closed_stream_callback(
             const ClosedClientStreamCallback& callback)
@@ -64,7 +55,7 @@ public:
     uint32_t pending_process_count()
     {
         ScopedLocker<FastLock> _(_controller_map_lock);
-        return _controller_map.size(); //!!!
+        return _controller_map.size(); 
     }
 
     // this interface will be called by channel.
@@ -75,8 +66,8 @@ public:
         if (is_closed())
         {
             //SLOG(ERROR, "call_method(): %s: stream already closed: %s",
-            //        RpcEndpointToString(_remote_endpoint).c_str(), _error_message);
-            cntl->Done(HDCS_NETWORK_CONNECTION_CLOSED, _error_message);
+            //        EndpointToString(_remote_endpoint).c_str(), _error_message);
+            cntl->Done(HDCS_NETWORK_ERROR_CONNECTION_CLOSED, _error_message);
             return;
         }
 
@@ -118,8 +109,9 @@ private:
 
         if (_closed_stream_callback)
         {
-            _closed_stream_callback(
-                    dynamic_pointer_cast<ClientStream>(std::shared_from_this()));
+            // TODO
+            //_closed_stream_callback(
+            //        hdcs::networking::dynamic_pointer_cast<ClientStream>(shared_from_this()));
         }
     }
 
@@ -163,36 +155,38 @@ private:
 
         cntl->Done(error_code, _error_message);
     }
-*/
+
     virtual void on_received(
             const ReadBufferPtr& message,
             int meta_size,
             int64_t data_size)
     {
         //FUNCTION_TRACE;
+        // TODO TODO TODO TODO TODO TODO
+        Meta meta;
         /*
-        RpcMeta meta;
         if (!meta.ParseFromBoundedZeroCopyStream(message.get(), meta_size))
         {
             //SLOG(ERROR, "on_received(): %s: parse rpc meta failed, ignore",
-            //        RpcEndpointToString(_remote_endpoint).c_str());
+            //        EndpointToString(_remote_endpoint).c_str());
             return;
         }
+        */
 
-        if (meta.type() != RpcMeta::RESPONSE)
+        if (meta.type() != Meta::RESPONSE)
         {
             // TODO handle un-expected message type
             //
             // just ignore it
-            SLOG(ERROR, "on_received(): %s {%lu}: un-expected message type %d, ignore",
-                    RpcEndpointToString(_remote_endpoint).c_str(),
-                    meta.sequence_id(), meta.type());
+            //SLOG(ERROR, "on_received(): %s {%lu}: un-expected message type %d, ignore",
+            //        EndpointToString(_remote_endpoint).c_str(),
+            //        meta.sequence_id(), meta.type());
             return;
         }
 
         // find corresponding call handle and erase from map
         // TODO more efficient sync map
-        RpcControllerImplPtr cntl;
+        ControllerImplPtr cntl;
         {
             ScopedLocker<FastLock> _(_controller_map_lock);
             ControllerMap::iterator it = _controller_map.find(meta.sequence_id());
@@ -209,7 +203,7 @@ private:
             //
             // just ignore it
             //SLOG(WARNING, "on_received(): %s {%lu}: sequence id not found (maybe already timeout), ignore",
-            //        RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
+            //        EndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
             return;
         }
 
@@ -217,29 +211,29 @@ private:
         {
             // just ignore it
             //SLOG(WARNING, "on_received(): %s {%lu}: request already done (maybe already timeout), ignore",
-            //        RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
+            //        EndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
             return;
         }
 
         if (!meta.has_failed())
         {
             //SLOG(ERROR,  "on_received(): %s {%lu}: bad rpc meta: \"failed\" field not set",
-            //        RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
-            cntl->Done(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "rpc meta: \"failed\" field not set");
+            //        EndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
+            cntl->Done(HDCS_NETWORK_ERROR_PARSE_RESPONSE_MESSAGE, "meta: \"failed\" field not set");
         }
         else if (meta.failed())
         {
             if (!meta.has_error_code())
             {
                 //SLOG(ERROR,  "on_received(): %s {%lu}: bad rpc meta: \"error_code\" field not set",
-                //        RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
-                cntl->Done(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "rpc meta: \"error_code\" field not set");
+                //        EndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
+                cntl->Done(HDCS_NETWORK_ERROR_PARSE_RESPONSE_MESSAGE, "meta: \"error_code\" field not set");
             }
             else if (!meta.has_reason())
             {
                 //SLOG(ERROR,  "on_received(): %s {%lu}: bad rpc meta: \"reason\" field not set",
-                //        RpcEndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
-                cntl->Done(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "rpc meta: \"reason\" field not set");
+                //        EndpointToString(_remote_endpoint).c_str(), meta.sequence_id());
+                cntl->Done(HDCS_NETWORK_ERROR_PARSE_RESPONSE_MESSAGE, "meta: \"reason\" field not set");
             }
             else
             {
@@ -248,19 +242,18 @@ private:
         }
         else // !meta.failed()
         {
-            SCHECK_EQ(data_size, message->TotalCount() - message->ByteCount());
+            //SCHECK_EQ(data_size, message->TotalCount() - message->ByteCount());
             cntl->SetResponseBuffer(message);
-            cntl->SetResponseCompressType(meta.has_compress_type() ?
-                    meta.compress_type() : CompressTypeNone);
-            cntl->Done(RPC_SUCCESS, "succeed");
+            //cntl->SetResponseCompressType(meta.has_compress_type() ?
+            //        meta.compress_type() : CompressTypeNone);
+            cntl->Done(HDCS_NETWORK_SUCCESS, "succeed");
         }
-        */
     }
 
 private:
     ClosedClientStreamCallback _closed_stream_callback;
 
-    // sequence_id ==> RpcControllerImplPtr
+    // sequence_id ==> ControllerImplPtr
     // TODO more efficient sync map
     typedef std::map<uint64_t, ControllerImplPtr> ControllerMap; // !!!Attention
     ControllerMap _controller_map;

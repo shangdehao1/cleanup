@@ -1,5 +1,5 @@
-#ifndef BINARY_RPC_REQUEST_H_
-#define BINARY_RPC_REQUEST_H_
+#ifndef BINARY_REQUEST_H_
+#define BINARY_REQUEST_H_
 
 #include <sofa/pbrpc/rpc_request.h>
 #include <sofa/pbrpc/rpc_message_header.h>
@@ -8,29 +8,29 @@
 namespace hdcs {
 namespace networking {
 
-class BinaryRpcRequestParser;
+class BinaryRequestParser;
 
-class BinaryRpcRequest;
-typedef sofa::pbrpc::shared_ptr<BinaryRpcRequest> BinaryRpcRequestPtr;
+class BinaryRequest;
+typedef hdcs::networking::shared_ptr<BinaryRequest> BinaryRequestPtr;
 
-class BinaryRpcRequest : public RpcRequest
+class BinaryRequest : public Request
 {
 public:
-    BinaryRpcRequest();
-    virtual ~BinaryRpcRequest();
+    BinaryRequest();
+    virtual ~BinaryRequest();
 
-    virtual RpcRequestType RequestType();
+    virtual RequestType RequestType();
 
     virtual std::string Method();
 
-    virtual uint64 SequenceId();
+    virtual uint64_t SequenceId();
 
     virtual void ProcessRequest(
-            const RpcServerStreamWPtr& server_stream,
+            const ServerStreamWPtr& server_stream,
             const ServicePoolPtr& service_pool);
 
     virtual ReadBufferPtr AssembleSucceedResponse(
-            const RpcControllerImplPtr& cntl,
+            const ControllerImplPtr& cntl,
             const google::protobuf::Message* response,
             std::string& err);
 
@@ -40,12 +40,12 @@ public:
             std::string& err);
 
 private:
-    friend class BinaryRpcRequestParser;
+    friend class BinaryRequestParser;
 
-    RpcMessageHeader _req_header;
-    RpcMeta          _req_meta;
+    MessageHeader _req_header;
+    Meta          _req_meta;
     ReadBufferPtr    _req_body;
-}; // class BinaryRpcRequest
+};
 
 }
 }

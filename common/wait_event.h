@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef WAIT_EVENT_H_
 #define WAIT_EVENT_H_
 
@@ -10,7 +6,6 @@
 namespace hdcs {
 namespace networking {
 
-    // async imitate sync...sdh
 class WaitEvent
 {
 public:
@@ -50,7 +45,7 @@ private:
     bool _signaled;
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace 
+} // namespace 
 
-#endif // _SOFA_PBRPC_WAIT_EVENT_H_
+#endif // 

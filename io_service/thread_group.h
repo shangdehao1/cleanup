@@ -59,7 +59,7 @@ public:
 private:
     hdcs::networking::shared_ptr<ThreadGroupImpl> _imp;
 
-    //SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ThreadGroup);
+    //DISALLOW_EVIL_CONSTRUCTORS(ThreadGroup);
 };
 
 } // namespace

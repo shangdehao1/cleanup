@@ -1,12 +1,8 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include <algorithm>
+#include <cstring>
 
 #include "buffer.h"
 #include "tran_buf_pool.h"
-#include <memory>
 
 namespace hdcs {
 namespace networking {
@@ -40,7 +36,6 @@ void ReadBuffer::Append(const BufHandle& buf_handle)
     _cur_it = _buf_list.begin();
 }
 
-// merge read_buffer into his read_buffer...sdh
 void ReadBuffer::Append(const ReadBuffer* read_buffer)
 {
     //SCHECK(read_buffer != NULL);
@@ -142,6 +137,8 @@ int64_t ReadBuffer::ByteCount() const
 {
     return _read_bytes;
 }
+
+/*------------------------------------------------------------------------*/
 
 WriteBuffer::WriteBuffer()
     : _total_block_size(0)

@@ -5,8 +5,8 @@ namespace hdcs {
 namespace networking {
 
 struct BufHandle{
-
-    char* data; // block header
+    // using tran_buf_pool to malloc space...sdh 
+    char* data; // block header.
     int   size; // data size
     union {
         int capacity; // block capacity, used by WriteBuffer
@@ -22,7 +22,7 @@ struct BufHandle{
         : data(_data)
         , size(_size)
         , offset(_offset) {}
-}; // class BufHandle
+};
 
 } 
 } 

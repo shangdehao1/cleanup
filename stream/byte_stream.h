@@ -8,7 +8,7 @@
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
-#include "../buffer/atomic.h"
+#include "../common/atomic.h"
 #include "endpoint.h"
 
 // If SOFA_PBRPC_TCP_NO_DELAY == true, means disable the Nagle algorithm.

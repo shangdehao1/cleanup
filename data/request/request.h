@@ -10,25 +10,38 @@
 #include <sofa/pbrpc/rpc_controller_impl.h>
 #include <sofa/pbrpc/service_pool.h>
 #include <sofa/pbrpc/buffer.h>
-#include <sofa/pbrpc/ptime.h>
-#include <sofa/pbrpc/smart_ptr/shared_ptr.hpp>
-#include <sofa/pbrpc/smart_ptr/enable_shared_from_this.hpp>
 */
+
+#include <google/protobuf/message.h>
+
+#include "../../common/smart_ptr/networking_ptr.h"
+#include "../../buffer/buffer.h"
+#include "../../common/ptime.h"
+#include "../../stream/endpoint.h"
+#include "../../controller/controller_impl.h"
+#include "../../controller/controller.h"
 
 namespace hdcs {
 namespace networking {
 
 class Request;
+typedef hdcs::networking::shared_ptr<Request> RequestPtr;
 
-typedef std::shared_ptr<Request> RequestPtr;
+// TODO delete
+class ServerStream;
+typedef hdcs::networking::shared_ptr<ServerStream> ServerStreamWPtr;
 
-class Request : public std::enable_shared_from_this<Request>
+// TODO delete
+class ClientStream;
+typedef hdcs::networking::shared_ptr<ClientStream> ClientStreamWPtr;
+
+class Request : public hdcs::networking::enable_shared_from_this<Request>
 {
 public:
     enum RequestType
     {
         BINARY,
-        HTTP
+        HTTP //disable TODO
     };
 
 public:
@@ -45,15 +58,13 @@ public:
     virtual uint64_t SequenceId() = 0;
 
     // Process the request.
-    /*
+    // TODO delete the second parameter
     virtual void ProcessRequest(
-            const RpcServerStreamWPtr& server_stream,
-            const ServicePoolPtr& service_pool) = 0;
-    */
+            const ServerStreamWPtr& server_stream) = 0;
 
     // Assemble succeed response to buffer.
     virtual ReadBufferPtr AssembleSucceedResponse(
-            const RpcControllerImplPtr& cntl,
+            const ControllerImplPtr& cntl,
             const google::protobuf::Message* response,
             std::string& err) = 0;
 
@@ -65,32 +76,32 @@ public:
 
 public:
     void CallMethod(
-            MethodBoard* method_board,
-            RpcController* controller,
+            //MethodBoard* method_board, // TODO 
+            Controller* controller,
             google::protobuf::Message* request,
             google::protobuf::Message* response);
 
     void OnCallMethodDone(
-            MethodBoard* method_board,
-            RpcController* controller,
+            //MethodBoard* method_board, // TODO
+            Controller* controller,
             google::protobuf::Message* request,
             google::protobuf::Message* response);
 
     void SendSucceedResponse(
-            const RpcControllerImplPtr& cntl,
+            const ControllerImplPtr& cntl,
             const google::protobuf::Message* response);
 
     void SendSucceedResponse(
-            const RpcServerStreamWPtr& stream,
+            const ServerStreamWPtr& stream,
             const ReadBufferPtr& buffer);
 
     void SendFailedResponse(
-            const RpcServerStreamWPtr& stream,
+            const ServerStreamWPtr& stream,
             int32_t error_code,
             const std::string& reason);
 
     void OnSendResponseDone(
-            RpcErrorCode error_code);
+            ErrorCode error_code);
 
     // Parse service & method name from method full name.
     // @return false if parse failed.
@@ -101,27 +112,28 @@ public:
 
     // Find method board from service pool.
     // @return NULL if not found.
+    /*
     static MethodBoard* FindMethodBoard(
-            const ServicePoolPtr& service_pool,
+            //const ServicePoolPtr& service_pool, // TODO
             const std::string& service_name,
             const std::string& method_name);
-
-    void SetLocalEndpoint(const RpcEndpoint& local_endpoint)
+    */
+    void SetLocalEndpoint(const Endpoint& local_endpoint)
     {
         _local_endpoint = local_endpoint;
     }
 
-    const RpcEndpoint& LocalEndpoint()
+    const Endpoint& LocalEndpoint()
     {
         return _local_endpoint;
     }
 
-    void SetRemoteEndpoint(const RpcEndpoint& remote_endpoint)
+    void SetRemoteEndpoint(const Endpoint& remote_endpoint)
     {
         _remote_endpoint = remote_endpoint;
     }
 
-    const RpcEndpoint& RemoteEndpoint()
+    const Endpoint& RemoteEndpoint()
     {
         return _remote_endpoint;
     }
@@ -137,12 +149,12 @@ public:
     }
 
 protected:
-    RpcEndpoint _local_endpoint;
-    RpcEndpoint _remote_endpoint;
+    Endpoint _local_endpoint;
+    Endpoint _remote_endpoint;
     PTime _received_time;
 }; // class Request
 
-} // namespace pbrpc
-} // namespace sofa
+} //
+} // 
 
 #endif

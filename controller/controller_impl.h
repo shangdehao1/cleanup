@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-//
 #ifndef CONTROLLER_IMPL_H_
 #define CONTROLLER_IMPL_H_
 
@@ -12,12 +8,14 @@
 #include <memory>
 
 #include "../stream/endpoint.h"
-#include "wait_event.h"
-#include "ptime.h"
+#include "../common/ptime.h"
 #include "../common/error_code.h"
 #include "../common/atomic.h"
+#include "../common/wait_event.h"
+#include "../common/smart_ptr/networking_ptr.h"
+#include "../buffer/buffer.h"
 
-#include <google/protobuf/descriptor.h>
+//#include <google/protobuf/descriptor.h>
 
 
 namespace hdcs {
@@ -25,12 +23,15 @@ namespace networking {
 
 #define CompressTypeAuto ((CompressType)-1)
 
-class ControllerImpl : public std::enable_shared_from_this<ControllerImpl>
+class ControllerImpl;
+
+typedef hdcs::networking::shared_ptr<ControllerImpl> ControllerImplPtr;
+
+class ControllerImpl : public hdcs::networking::enable_shared_from_this<ControllerImpl>
 {
 public:
-    typedef std::shared_ptr<ControllerImpl> ControllerImplPtr;
-    typedef std::shared_ptr<WaitEvent> WaitEventPtr;
-    //typedef boost::function<void(const ControllerImplPtr&)> InternalDoneCallback;
+//    typedef hdcs::networking::shared_ptr<ControllerImpl> ControllerImplPtr;
+    typedef hdcs::networking::shared_ptr<hdcs::networking::WaitEvent> WaitEventPtr;
     typedef std::function<void(const ControllerImplPtr&)> InternalDoneCallback;
     
 
@@ -54,7 +55,7 @@ public:
 
     virtual ~ControllerImpl() {}
 
-    //  some operation for RequestOptions.
+    //  some operation for RequestOptions. TODO
     /*
     void SetRequestCompressType(CompressType compress_type)
     {
@@ -135,7 +136,7 @@ public:
 
     //void NotifyOnCancel(google::protobuf::Closure*  callback )
     //{
-        // TODO to support
+    //    TODO to support
     //}
      void NotifyOnCancel( )
      {
@@ -244,7 +245,7 @@ public:
             }
         }
     }
-/*
+    /*
     void FillFromMethodDescriptor(const google::protobuf::MethodDescriptor* method)
     {
         _method_id = method->full_name();
@@ -272,7 +273,7 @@ public:
                 CompressTypeNone;
         }
     }
-    */
+   */
 
     void SetSync()
     {
@@ -288,19 +289,18 @@ public:
     {
         _wait_event = wait_event;
     }
-/*
+
     const WaitEventPtr& WaitEvent() const
     {
         return _wait_event;
     }
-    */
-/*
-    void SetRpcClientStream(const RpcClientStreamWPtr& stream)
+/*   // TODO
+    void SetClientStream(const ClientStreamWPtr& stream)
     {
         _client_stream = stream;
     }
 
-    const RpcClientStreamWPtr& RpcClientStream() const
+    const ClientStreamWPtr& ClientStream() const
     {
         return _client_stream;
     }
@@ -326,7 +326,7 @@ public:
     {
         return _timeout_id;
     }
-/*
+
     void SetRequestBuffer(const ReadBufferPtr& request_buffer)
     {
         _request_buffer = request_buffer;
@@ -346,7 +346,7 @@ public:
     {
         return _response_buffer;
     }
-*/
+
     void NotifyRequestSent(const Endpoint& local_endpoint, int64_t sent_bytes)
     {
         _is_request_sent = true;
@@ -359,17 +359,17 @@ public:
     // -----------------------------------------------------------------
     // Used only in server.
     // -----------------------------------------------------------------
-    /*
-    void SetRpcServerStream(const RpcServerStreamWPtr& stream)
+    /* TODO
+    void SetServerStream(const ServerStreamWPtr& stream)
     {
         _server_stream = stream;
     }
 
-    const RpcServerStreamWPtr& RpcServerStream() const
+    const ServerStreamWPtr& ServerStream() const
     {
         return _server_stream;
     }
-*/
+    */
     void SetServerTimeout(int64_t timeout)
     {
         _server_timeout = timeout;
@@ -475,8 +475,8 @@ private:
     //ClientStreamWPtr _client_stream;
     PTime _expiration;
     uint64_t _timeout_id;
-    //ReadBufferPtr _request_buffer;
-    //ReadBufferPtr _response_buffer;
+    ReadBufferPtr _request_buffer;
+    ReadBufferPtr _response_buffer;
     PTime _request_sent_time;
 
     struct RequestOptions {
@@ -493,7 +493,7 @@ private:
     RequestOptions _auto_options; // options from proto
 
     // used only in server side
-    //RpcServerStreamWPtr _server_stream;
+    //ServerStreamWPtr _server_stream;
     int64_t _server_timeout;
     PTime _request_received_time;
     PTime _start_process_time;
@@ -503,8 +503,6 @@ private:
     const std::string* _http_path;
     const std::map<std::string, std::string>* _http_query_params;
     const std::map<std::string, std::string>* _http_headers;
-
-    //DISALLOW_EVIL_CONSTRUCTORS(ControllerImpl);
 };
 
 } 

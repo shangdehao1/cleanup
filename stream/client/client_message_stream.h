@@ -11,9 +11,9 @@
 #include "../byte_stream.h"
 #include "../../controller/controller.h"
 #include "../../buffer/buffer.h"
-#include "../../common/fast_lock.h"
+#include "../../common/lock/locks.h"
 #include "../../common/error_code.h"
-#include "../../common/scoped_locker.h"
+#include "../../common/smart_ptr/networking_ptr.h"
 #include "../../buffer/tran_buf_pool.h"
 #include "../../data/message/message_header.h"
 

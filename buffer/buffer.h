@@ -8,23 +8,23 @@
 // google protobuf
 #include <google/protobuf/io/zero_copy_stream.h>
 
-//#include <sofa/pbrpc/common.h>
 #include "buf_handle.h"
+#include "../common/smart_ptr/smart_ptr.hpp"
 
 namespace hdcs {
 namespace networking {
 
 class ReadBuffer;
-typedef std::shared_ptr<ReadBuffer> ReadBufferPtr;
+typedef hdcs::networking::shared_ptr<ReadBuffer> ReadBufferPtr;
 class WriteBuffer;
-typedef std::shared_ptr<WriteBuffer> WriteBufferPtr;
+typedef hdcs::networking::shared_ptr<WriteBuffer> WriteBufferPtr;
 
 typedef std::deque<BufHandle> BufHandleList;
 typedef std::deque<BufHandle>::iterator BufHandleListIterator;
 typedef std::deque<BufHandle>::reverse_iterator BufHandleListReverseIterator;
 
-class ReadBuffer : public google::protobuf::io::ZeroCopyInputStream
-//class ReadBuffer
+//class ReadBuffer : public google::protobuf::io::ZeroCopyInputStream
+class ReadBuffer
 {
 public:
     ReadBuffer();
@@ -52,7 +52,7 @@ public:
     // Trans buffer to string.
     std::string ToString() const;
 
-    // implements ZeroCopyInputStream ----------------------------------
+    // implements ZeroCopyInputStream when using zeroCopyInputStream 
     bool Next(const void** data, int* size);
     void BackUp(int count);
     bool Skip(int count);
@@ -67,10 +67,10 @@ private:
     int _last_bytes; // last read bytes
     int64_t _read_bytes; // total read bytes
 
-}; // class ReadBuffer
+};
 
-class WriteBuffer : public google::protobuf::io::ZeroCopyOutputStream
-//class WriteBuffer
+//class WriteBuffer : public google::protobuf::io::ZeroCopyOutputStream
+class WriteBuffer
 {
 public:
     WriteBuffer();
@@ -108,7 +108,7 @@ public:
     // * "pos" + "size" <= ByteCount()
     void SetData(int64_t pos, const char* data, int size);
 
-    // implements ZeroCopyOutputStream ---------------------------------
+    // implements ZeroCopyOutputStream when using zeroCopyOutputStream 
     bool Next(void** data, int* size);
     void BackUp(int count);
     int64_t ByteCount() const;
@@ -130,9 +130,9 @@ private:
     int _last_bytes; // last write bytes
     int64_t _write_bytes; // total write bytes
 
-}; // class WriteBuffer
+};
 
 } 
 } 
 
-#endif // _SOFA_PBRPC_BUFFER_H_
+#endif

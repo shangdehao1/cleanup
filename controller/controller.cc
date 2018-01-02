@@ -1,11 +1,8 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #include <memory>
-#include "../stream/endpoint.h"
+
 #include "controller.h"
 #include "controller_impl.h"
+#include "../stream/endpoint.h"
 
 namespace hdcs {
 namespace networking {
@@ -21,15 +18,15 @@ Controller::~Controller()
 
 std::string Controller::LocalAddress() const
 {
-    //return EndpointToString(_impl->LocalEndpoint());
+    return hdcs::networking::EndPointToString(_impl->LocalEndpoint());
 }
 
 std::string Controller::RemoteAddress() const
 {
-    //return EndpointToString(_impl->RemoteEndpoint());
+    return hdcs::networking::EndPointToString(_impl->RemoteEndpoint());
 }
 
-// re-create a new rpcControllerImp object.
+// re-create a new ControllerImp object.
 void Controller::Reset()
 {
     _impl.reset(new ControllerImpl());

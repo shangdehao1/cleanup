@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef _SOFA_PBRPC_THREAD_GROUP_IMPL_H_
-#define _SOFA_PBRPC_THREAD_GROUP_IMPL_H_
+#ifndef THREAD_GROUP_IMPL_H_
+#define THREAD_GROUP_IMPL_H_
 
 #include <unistd.h>
 #include <pthread.h>
@@ -264,10 +264,10 @@ private:
     pthread_t* _threads;
     ThreadParam* _thread_params;
 
-    //SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(ThreadGroupImpl);
+    //DISALLOW_EVIL_CONSTRUCTORS(ThreadGroupImpl);
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} //
 
-#endif // _SOFA_PBRPC_THREAD_GROUP_IMPL_H_
+#endif // 

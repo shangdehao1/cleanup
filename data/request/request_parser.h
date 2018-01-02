@@ -1,25 +1,21 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-#ifndef _SOFA_PBRPC_RPC_REQUEST_PARSER_H_
-#define _SOFA_PBRPC_RPC_REQUEST_PARSER_H_
+#ifndef RPC_REQUEST_PARSER_H_
+#define RPC_REQUEST_PARSER_H_
 
 #include <vector>
 
-#include <sofa/pbrpc/rpc_request.h>
+#include "request.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-class RpcRequestParser;
-typedef sofa::pbrpc::shared_ptr<RpcRequestParser> RpcRequestParserPtr;
+class RequestParser;
+typedef hdcs::networking::shared_ptr<RequestParser> RequestParserPtr;
 
-class RpcRequestParser
+class RequestParser
 {
 public:
-    RpcRequestParser() {}
-    virtual ~RpcRequestParser(){}
+    RequestParser() {}
+    virtual ~RequestParser(){}
 
     // Get the parser name.
     virtual const char* Name() = 0;
@@ -53,9 +49,7 @@ public:
     static void RegisteredParsers(std::vector<RpcRequestParserPtr>* parsers);
 }; // class RpcRequestParser
 
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} // 
 
-#endif // _SOFA_PBRPC_RPC_REQUEST_PARSER_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

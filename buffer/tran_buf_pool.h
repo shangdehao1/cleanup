@@ -1,7 +1,7 @@
 #ifndef BUF_POOL_H_
 #define BUF_POOL_H_
 
-#include "atomic.h"
+#include "../common/atomic.h"
 
 // base_block_size = 1K
 #ifndef TRAN_BUF_BLOCK_BASE_SIZE
@@ -83,7 +83,7 @@ public:
             ::free(reinterpret_cast<int*>(p) - 2);
         }
     }
-}; // class TranBufPool
+};
 
 } 
 }

@@ -1,14 +1,10 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 syntax = "proto2";
 
-import "sofa/pbrpc/rpc_option.proto";
+import "option.proto";
 
-package sofa.pbrpc;
+package hdcs.networking;
 
-message RpcMeta {
+message Meta {
 
   /////////////////////////////////////////////////////
   // The following fields are used both for request and response.

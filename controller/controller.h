@@ -1,15 +1,10 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef CONTROLLER_H_
 #define CONTROLLER_H_
 
 #include <string>
 #include <map>
-//#include <google/protobuf/service.h>
 
-//#include <sofa/pbrpc/common.h>
+#include "../common/smart_ptr/smart_ptr.hpp"
 //#include <sofa/pbrpc/rpc_option.pb.h>
 
 namespace hdcs {
@@ -25,8 +20,7 @@ public:
     virtual ~Controller();
 
     // -------- used by both client and server side ---------
-    // These calls can be made from both client side and server side.
- 
+    //
     // Get the local address in format of "ip:port".
     //
     // For client:
@@ -67,6 +61,7 @@ public:
     // * set in the service proto options (default value is 10 seconds)
     int64_t Timeout() const;
 
+    // TODO
     // Set compress type of the request message.
     // Supported types:
     //   CompressTypeNone
@@ -76,6 +71,7 @@ public:
     //   CompressTypeLZ4
     //void SetRequestCompressType(CompressType compress_type);
 
+    // TODO
     // Set expected compress type of the response message.
     // Supported types:
     //   CompressTypeNone
@@ -86,7 +82,7 @@ public:
     //void SetResponseCompressType(CompressType compress_type);
 
     // After a call has finished, returns true if the call failed.  The possible
-    // reasons for failure depend on the RPC implementation.  Failed() must not
+    // reasons for failure depend on the implementation.  Failed() must not
     // be called before a call has finished.  If Failed() returns true, the
     // contents of the response message are undefined.
     //
@@ -94,7 +90,7 @@ public:
     virtual bool Failed() const;
 
     // If Failed() is true, returns error code which identities the reason.
-    // The error code is of type RpcErrorCode.
+    // The error code is of type ErrorCode.
     //
     // This method can only be called after the call has finished.
     virtual int ErrorCode() const;
@@ -116,8 +112,9 @@ public:
     // This method can only be called after the call has finished.
     int64_t SentBytes() const;
 
-    // Advises the RPC system that the caller desires that the RPC call be
-    // canceled.  The RPC system may cancel it immediately, may wait awhile and
+    // TODO delete
+    // Advises the system that the caller desires that the call be
+    // canceled.  The RPC system may cancel it immediately, may wait a while and
     // then cancel it, or may not even cancel the call at all.  If the call is
     // canceled, the "done" callback will still be called and the Controller
     // will indicate that the call failed at that time.
@@ -163,19 +160,19 @@ public:
     // will be called immediately.
     //
     // NotifyOnCancel() must be called no more than once per request.
+    // TODO
     //virtual void NotifyOnCancel(google::protobuf::Closure* callback);
     virtual void NotifyOnCancel();
 
 public:
-    const std::shared_ptr<ControllerImpl>& impl() const
+    const hdcs::networking::shared_ptr<ControllerImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    std::shared_ptr<ControllerImpl> _impl;
+    hdcs::networking::shared_ptr<ControllerImpl> _impl;
 
-    //DISALLOW_EVIL_CONSTRUCTORS(Controller);
 };
 }
 }

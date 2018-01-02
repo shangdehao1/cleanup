@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef PTIME_H_
 #define PTIME_H_
 
@@ -84,7 +80,7 @@ inline TimeDuration time_duration_microseconds(int64_t n)
     return boost::posix_time::microseconds(static_cast<long>(n));
 }
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace 
+} // namespace
 
 #endif

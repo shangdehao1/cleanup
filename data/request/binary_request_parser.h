@@ -1,9 +1,5 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-#ifndef _SOFA_PBRPC_BINARY_RPC_REQUEST_PARSER_H_
-#define _SOFA_PBRPC_BINARY_RPC_REQUEST_PARSER_H_
+#ifndef BINARY_RPC_REQUEST_PARSER_H_
+#define BINARY_RPC_REQUEST_PARSER_H_
 
 #include <sofa/pbrpc/rpc_request_parser.h>
 #include <sofa/pbrpc/binary_rpc_request.h>

@@ -1,7 +1,6 @@
 #ifndef FLOW_CONTROLLER_H_
 #define FLOW_CONTROLLER_H_
 
-//#include <sofa/pbrpc/common_internal.h>
 #include "buffer.h"
 #include "atomic.h"
 

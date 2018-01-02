@@ -1,13 +1,9 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-#ifndef ENDPOINT
-#define ENDPOINT
+#ifndef ENDPOINT_H
+#define ENDPOINT_H
 
 #include <sstream>
 #include <string>
 #include <boost/asio.hpp>
-
 
 namespace hdcs {
 namespace networking {
