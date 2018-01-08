@@ -1,40 +1,47 @@
-#ifndef _SOFA_PBRPC_RPC_SERVER_STREAM_H_
-#define _SOFA_PBRPC_RPC_SERVER_STREAM_H_
+#ifndef SERVER_STREAM_H_
+#define SERVER_STREAM_H_
 
-#include <sofa/pbrpc/rpc_server_message_stream.h>
-#include <sofa/pbrpc/rpc_error_code.h>
-#include <sofa/pbrpc/rpc_meta.pb.h>
+#include <functional>
 
-namespace sofa {
-namespace pbrpc {
+#include <boost/smart_ptr.hpp>
+
+#include "../../buffer/buffer.h"
+#include "../../data/request/request.h"
+#include "../../common/smart_ptr/networking_ptr.h"
+
+
+namespace hdcs {
+namespace networking {
 
 // define some callback function 
 // Callback function when received request message.
-typedef boost::function<void(
-        const RpcServerStreamWPtr& /* stream */,
-        const RpcRequestPtr& /* request */)> ReceivedRequestCallback;
+typedef std::function<void(
+        const ServerStreamPtr& ,
+        const RequestPtr& )> ReceivedRequestCallback;
 
 // Callback function when closed server stream.
-typedef boost::function<void(
-        const RpcServerStreamPtr& /* stream */)> ClosedServerStreamCallback;
+typedef std::function<void(
+        const ServerStreamPtr& )> ClosedServerStreamCallback;
 
 // Callback function when send response message done.
-//  * if "status" == RPC_SUCCESS, means send response succeed;
+//  * if "status" == HDCS_NETWORK_SUCCESS, means send response succeed;
 //  * else, means send failed.
-typedef boost::function<void(
-        RpcErrorCode /* status */)> SendResponseCallback;
+typedef std::function<void(
+        ErrorCode )> SendResponseCallback;
 
-class RpcServerStream : public RpcServerMessageStream<SendResponseCallback>
+// TODO TODO TODO
+//class ServerStream : public ServerMessageStream<SendResponseCallback>
+class ServerStream
 {
 public:
-    RpcServerStream(IOService& io_service)
-        : RpcServerMessageStream<SendResponseCallback>( // for client, RpcControllerImpl
-                ROLE_TYPE_SERVER, io_service, RpcEndpoint())
+    ServerStream(IOService& io_service)
+        //: ServerMessageStream<SendResponseCallback>( // for client, ControllerImpl
+        //        ROLE_TYPE_SERVER, io_service, Endpoint())
     {}
 
-    virtual ~RpcServerStream() 
+    virtual ~ServerStream() 
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
     }
 
     // Set the callback function when received request.
@@ -76,7 +83,7 @@ public:
     }
 
     // Get pending process count.
-    uint32 pending_process_count() const
+    uint32_t pending_process_count() const
     {
         return _pending_process_count;
     }
@@ -89,65 +96,69 @@ public:
             const ReadBufferPtr& message, 
             const SendResponseCallback& callback)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
-        async_send_message(message, callback); // parent method.
+        //FUNCTION_TRACE;
+        //async_send_message(message, callback); // parent method. TODO 
     }
 
 private:
     virtual void on_closed()
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         if (_closed_stream_callback)
         {
-            _closed_stream_callback(
-                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()));
+            //_closed_stream_callback(
+            //        hdcs::networking::dynamic_pointer_cast<ServerStream>(boost::shared_from_this())); // TODO
         }
     }
 
+    // para1: response_message
+    // para2: callback
     virtual bool on_sending(
-            const ReadBufferPtr& /* response_message */,
-            const SendResponseCallback& /* callback */)
+            const ReadBufferPtr& ,
+            const SendResponseCallback& )
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         return true;
     }
 
+    // para1: response message
     virtual void on_sent(
-            const ReadBufferPtr& /* response_message */,
+            const ReadBufferPtr& ,
             const SendResponseCallback& callback)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
-        if (callback) callback(RPC_SUCCESS);
+        //FUNCTION_TRACE;
+        if (callback) callback(HDCS_NETWORK_SUCCESS);
     }
 
+    // para2 : response message.
     virtual void on_send_failed(
-            RpcErrorCode error_code,
-            const ReadBufferPtr& /* response_message */,
+            ErrorCode error_code,
+            const ReadBufferPtr& ,
             const SendResponseCallback& callback)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         if (callback) callback(error_code);
     }
 
     virtual void on_received(
-            const RpcRequestPtr& request)
+            const RequestPtr& request)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         if (_received_request_callback)
         {
-            _received_request_callback(
-                    sofa::pbrpc::dynamic_pointer_cast<RpcServerStream>(shared_from_this()),
-                    request);
+            //_received_request_callback(
+            //        hdcs::networking::dynamic_pointer_cast<ServerStream>(boost::shared_from_this()), // TODO
+            //        request);
         }
     }
 
 private:
     ReceivedRequestCallback _received_request_callback;
     ClosedServerStreamCallback _closed_stream_callback;
-    AtomicCounter _pending_process_count; // count of processing requests to be sent by this stream
-}; // class RpcServerStream
+    AtomicCounter _pending_process_count;
+};
 
-} // namespace pbrpc
-} // namespace sofa
+}
+}
 
-#endif // _SOFA_PBRPC_RPC_SERVER_STREAM_H_
+#endif

@@ -75,7 +75,7 @@ sub PrintHead()
     print "//    \n";
     print "/////////////////////////////////////////////////////\n\n";
 
-    #print "#include <google/protobuf/stubs/common.h>\n";
+    print "#include <google/protobuf/stubs/common.h>\n";
     print "#include \"closure_helper.h\"\n\n";
 
     print "namespace hdcs {\n";
@@ -94,8 +94,8 @@ sub PrintClosureBase()
 {
     print "
 /// base class for all Closures
-///class ClosureBase : public google::protobuf::Closure // disable google dependences
-class ClosureBase
+class ClosureBase : public google::protobuf::Closure // disable google dependences
+///class ClosureBase
 {
 public:
     virtual ~ClosureBase() {}

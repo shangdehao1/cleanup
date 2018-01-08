@@ -1,9 +1,9 @@
 #ifndef BINARY_REQUEST_H_
 #define BINARY_REQUEST_H_
 
-#include <sofa/pbrpc/rpc_request.h>
-#include <sofa/pbrpc/rpc_message_header.h>
-#include <sofa/pbrpc/rpc_meta.pb.h>
+#include "request.h"
+#include "../message/message_header.h"
+#include "../message/meta.pb.h"
 
 namespace hdcs {
 namespace networking {
@@ -19,7 +19,8 @@ public:
     BinaryRequest();
     virtual ~BinaryRequest();
 
-    virtual RequestType RequestType();
+    // why ???!!!!dehao
+    //virtual RequestType RequestType();
 
     virtual std::string Method();
 
@@ -35,7 +36,7 @@ public:
             std::string& err);
 
     virtual ReadBufferPtr AssembleFailedResponse(
-            int32 error_code,
+            int32_t error_code,
             const std::string& reason,
             std::string& err);
 

@@ -1,9 +1,11 @@
-#ifndef _SOFA_PBRPC_RPC_CLIENT_IMPL_H_
-#define _SOFA_PBRPC_RPC_CLIENT_IMPL_H_
+#ifndef CLIENT_IMPL_H_
+#define CLIENT_IMPL_H_
 
 #include <list>
 #include <map>
 
+#include "../../common/smart_ptr/networking_ptr.h"
+/*
 #include <sofa/pbrpc/common_internal.h>
 #include <sofa/pbrpc/rpc_client.h>
 #include <sofa/pbrpc/rpc_client_stream.h>
@@ -11,11 +13,12 @@
 #include <sofa/pbrpc/thread_group_impl.h>
 #include <sofa/pbrpc/timer_worker.h>
 #include <sofa/pbrpc/rpc_timeout_manager.h>
+*/
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-class RpcClientImpl: public sofa::pbrpc::enable_shared_from_this<RpcClientImpl>
+class ClientImpl: public hdcs::networking::enable_shared_from_this<ClientImpl>
 {
 public:
     static const int MAINTAIN_INTERVAL_IN_MS = 100;

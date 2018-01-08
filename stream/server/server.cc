@@ -4,38 +4,38 @@
 #include <sofa/pbrpc/rpc_server.h>
 #include <sofa/pbrpc/rpc_server_impl.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-RpcServer::RpcServer(const RpcServerOptions& options, 
+Server::Server(const ServerOptions& options, 
                      EventHandler* handler, 
                      const ProfilingLinker& /*linker*/)
 {
-    touch_boost_error_category(); // 
-    _impl.reset(new RpcServerImpl(options, handler)); // !!
+    //touch_boost_error_category(); // TODO 
+    _impl.reset(new ServerImpl(options, handler)); // !!
 }
 
-RpcServer::~RpcServer()
+Server::~Server()
 {
     Stop();
 }
 
-bool RpcServer::Start(const std::string& server_address)
+bool Server::Start(const std::string& server_address)
 {
     return _impl->Start(server_address);
 }
 
-void RpcServer::Stop()
+void Server::Stop()
 {
     _impl->Stop();
 }
 
 static volatile bool s_quit = false;
-static void SignalIntHandler(int /*sig*/)
+static void SignalIntHandler(int )
 {
     s_quit = true;
 }
-int RpcServer::Run()
+int Server::Run()
 {
     signal(SIGINT, SignalIntHandler);
     signal(SIGTERM, SignalIntHandler);
@@ -45,45 +45,46 @@ int RpcServer::Run()
     return 0;
 }
 
-RpcServerOptions RpcServer::GetOptions()
+ServerOptions Server::GetOptions()
 {
     return _impl->GetOptions();
 }
 
-void RpcServer::ResetOptions(const RpcServerOptions& options)
+void Server::ResetOptions(const ServerOptions& options)
 {
     _impl->ResetOptions(options);
 }
 
-bool RpcServer::RegisterService(google::protobuf::Service* service, bool take_ownership)
+bool Server::RegisterService(google::protobuf::Service* service, bool take_ownership)
 {
     return _impl->RegisterService(service, take_ownership);
 }
 
-int RpcServer::ServiceCount()
+int Server::ServiceCount()
 {
     return _impl->ServiceCount();
 }
 
-int RpcServer::ConnectionCount()
+int Server::ConnectionCount()
 {
     return _impl->ConnectionCount();
 }
 
-bool RpcServer::IsListening()
+bool Server::IsListening()
 {
     return _impl->IsListening();
 }
-
-bool RpcServer::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
+/*
+bool Server::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
 {
     return _impl->RegisterWebServlet(path, servlet, take_ownership);
 }
 
-Servlet RpcServer::UnregisterWebServlet(const std::string& path)
+Servlet Server::UnregisterWebServlet(const std::string& path)
 {
     return _impl->UnregisterWebServlet(path);
 }
+*/
 
-} // namespace pbrpc
-} // namespace sofa
+}
+} 

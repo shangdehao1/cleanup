@@ -1,47 +1,40 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+#ifndef LISTENER_H_
+#define LISTENER_H_
 
-#ifndef _SOFA_PBRPC_RPC_LISTENER_H_
-#define _SOFA_PBRPC_RPC_LISTENER_H_
+#include "../common/smart_ptr/networking_ptr.h"
+#include "../common/error_code.h"
 
-#include <sofa/pbrpc/common_internal.h>
-#include <sofa/pbrpc/rpc_endpoint.h>
-#include <sofa/pbrpc/rpc_error_code.h>
-#include <sofa/pbrpc/locks.h>
-#include <sofa/pbrpc/io_service_pool.h>
-
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 using boost::asio::ip::tcp;
 
-class Listener : public sofa::pbrpc::enable_shared_from_this<Listener>
+class Listener : public hdcs::networking::enable_shared_from_this< Listener >
 {
     // Callback function when created or accepted a new connection.
-    typedef boost::function<void(const RpcServerStreamPtr& /* stream */)> Callback;
-    typedef boost::function<void(RpcErrorCode /* error_code */,
-            const std::string& /* error_text */)> FailCallback;
+    typedef boost::function<void(const ServerStreamPtr& )> Callback;
+    typedef boost::function<void(ErrorCode,
+            const std::string& )> FailCallback;
 
 public:
     static const int LISTEN_MAX_CONNECTIONS = 4096;
     
 public:
-    Listener(IOServicePoolPtr& io_service_pool, const RpcEndpoint& endpoint)
+    Listener(IOServicePoolPtr& io_service_pool, const Endpoint& endpoint)
         : _io_service_pool(io_service_pool)
         , _endpoint(endpoint)
-        , _endpoint_str(RpcEndpointToString(endpoint))
+        , _endpoint_str(EndpointToString(endpoint))
         , _acceptor(io_service_pool->GetIOService()) // the only one acceptor
         , _is_closed(true)
     {
-        SOFA_PBRPC_INC_RESOURCE_COUNTER(Listener);
+        //INC_RESOURCE_COUNTER(Listener);
     }
 
     virtual ~Listener()
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         close();
-        SOFA_PBRPC_DEC_RESOURCE_COUNTER(Listener);
+        //DEC_RESOURCE_COUNTER(Listener);
     }
 
     void close()
@@ -51,10 +44,10 @@ public:
         _is_closed = true;
 
         boost::system::error_code ec;
-        _acceptor.cancel(ec);
-        _acceptor.close(ec);
+        _acceptor.cancel(ec); //
+        _acceptor.close(ec);  // 
 
-        SLOG(INFO, "close(): listener closed: %s", _endpoint_str.c_str());
+        //SLOG(INFO, "close(): listener closed: %s", _endpoint_str.c_str());
     }
 
     bool is_closed()
@@ -92,8 +85,8 @@ public:
         _acceptor.open(_endpoint.protocol(), ec);
         if (ec)
         {
-            SLOG(ERROR, "start_listen(): open acceptor failed: %s: %s",
-                    _endpoint_str.c_str(), ec.message().c_str());
+            //SLOG(ERROR, "start_listen(): open acceptor failed: %s: %s",
+            //        _endpoint_str.c_str(), ec.message().c_str());
             return false;
         }
 
@@ -101,24 +94,24 @@ public:
                         fcntl(_acceptor.native(), F_GETFD) | FD_CLOEXEC);
         if (ret < 0)
         {
-            SLOG(ERROR, "start_listen(): make fd close_on_exec failed: %s: %s",
-                    _endpoint_str.c_str(), strerror(errno));
+            //SLOG(ERROR, "start_listen(): make fd close_on_exec failed: %s: %s",
+            //        _endpoint_str.c_str(), strerror(errno));
             return false;
         }
 
         _acceptor.set_option(tcp::acceptor::reuse_address(true), ec);
         if (ec)
         {
-            SLOG(ERROR, "start_listen(): set acceptor option failed: %s: %s",
-                    _endpoint_str.c_str(), ec.message().c_str());
+            //SLOG(ERROR, "start_listen(): set acceptor option failed: %s: %s",
+            //        _endpoint_str.c_str(), ec.message().c_str());
             return false;
         }
 
         _acceptor.bind(_endpoint, ec);
         if (ec)
         {
-            SLOG(ERROR, "start_listen(): bind acceptor failed: %s: %s",
-                    _endpoint_str.c_str(), ec.message().c_str());
+            //SLOG(ERROR, "start_listen(): bind acceptor failed: %s: %s",
+            //        _endpoint_str.c_str(), ec.message().c_str());
             return false;
         }
 
@@ -126,12 +119,12 @@ public:
         _acceptor.listen(LISTEN_MAX_CONNECTIONS, ec);
         if (ec)
         {
-            SLOG(ERROR, "start_listen(): listen acceptor failed: %s: %s",
-                    _endpoint_str.c_str(), ec.message().c_str());
+            //SLOG(ERROR, "start_listen(): listen acceptor failed: %s: %s",
+            //        _endpoint_str.c_str(), ec.message().c_str());
             return false;
         }
 
-        SLOG(INFO, "start_listen(): listen succeed: %s", _endpoint_str.c_str());
+        //SLOG(INFO, "start_listen(): listen succeed: %s", _endpoint_str.c_str());
         _is_closed = false;
 
         // async accept operation.
@@ -144,8 +137,8 @@ private:
 
     void async_accept()
     {
-        // one connection, one rpc_server_stream.
-        RpcServerStreamPtr stream(new RpcServerStream(_io_service_pool->GetIOService()));
+        // one connection, one server_stream.
+        ServerStreamPtr stream(new ServerStream(_io_service_pool->GetIOService()));
 
         // callback for create stream
         if (_create_callback)
@@ -156,7 +149,7 @@ private:
     }
 
     // callback for async_connection.
-    void on_accept(const RpcServerStreamPtr& stream,
+    void on_accept(const ServerStreamPtr& stream,
             const boost::system::error_code& ec)
     {
         if (_is_closed)
@@ -164,15 +157,15 @@ private:
 
         if (ec)
         {
-            SLOG(ERROR, "on_accept(): accept error at %s: %s",
-                    _endpoint_str.c_str(), ec.message().c_str());
+            //SLOG(ERROR, "on_accept(): accept error at %s: %s",
+            //        _endpoint_str.c_str(), ec.message().c_str());
 
             close();
 
             if (_accept_fail_callback)
             {
-                RpcErrorCode error_code = ec == boost::asio::error::no_descriptors ?
-                    RPC_ERROR_TOO_MANY_OPEN_FILES : RPC_ERROR_UNKNOWN;
+                ErrorCode error_code = (ec == boost::asio::error::no_descriptors) 
+                    ? HDCS_NETWORK_ERROR_TOO_MANY_OPEN_FILES : HDCS_NETWORK_ERROR_UNKNOWN;
                  // calllback for fail connection.
                 _accept_fail_callback(error_code, ec.message());
             }
@@ -193,8 +186,8 @@ private:
 
             if (!stream->is_closed())
             {
-                SLOG(INFO, "on_accept(): accept connection at %s: %s",
-                        _endpoint_str.c_str(), RpcEndpointToString(stream->remote_endpoint()).c_str());
+                //SLOG(INFO, "on_accept(): accept connection at %s: %s",
+                //        _endpoint_str.c_str(), EndpointToString(stream->remote_endpoint()).c_str());
             }
 
             async_accept(); // listen next stream
@@ -203,9 +196,8 @@ private:
 
 private:
     IOServicePoolPtr& _io_service_pool;
-    RpcEndpoint _endpoint;
+    Endpoint _endpoint;
     std::string _endpoint_str;
-    // the following three callback function will be set by server_impl.
     Callback _create_callback;
     Callback _accept_callback;
     FailCallback _accept_fail_callback;
@@ -213,12 +205,9 @@ private:
     volatile bool _is_closed;
     MutexLock _close_lock;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(Listener);
-}; // class Listener
+};
 
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} //  
 
-#endif // _SOFA_PBRPC_RPC_LISTENER_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

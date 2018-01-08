@@ -1,27 +1,26 @@
-#ifndef _SOFA_PBRPC_RPC_SERVER_MESSAGE_STREAM_H_
-#define _SOFA_PBRPC_RPC_SERVER_MESSAGE_STREAM_H_
+#ifndef SERVER_MESSAGE_STREAM_H_
+#define SERVER_MESSAGE_STREAM_H_
 
 #include <algorithm>
 #include <deque>
 
-#include <sofa/pbrpc/rpc_error_code.h>
-#include <sofa/pbrpc/rpc_byte_stream.h>
-#include <sofa/pbrpc/rpc_message_header.h>
-#include <sofa/pbrpc/buffer.h>
-#include <sofa/pbrpc/tran_buf_pool.h>
-#include <sofa/pbrpc/flow_controller.h>
-#include <sofa/pbrpc/rpc_request_parser.h>
-#include <sofa/pbrpc/string_utils.h>
+#include "../../common/error_code.h"
+#include "../../common/lock/locks.h"
+#include "../byte_stream.h"
+#include "../../data/message/message_header.h"
+#include "../../buffer/buffer.h"
+#include "../../buffer/tran_buf_pool.h"
+//#include <flow_controller.h> // TODO
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 // The "SendCookie" type should has default constructor, and
 // should be copyable.
 // SendResponseCallback.
-// for client: RpcConstrollerImpl, for server: SendResponse 
+// for client: ConstrollerImpl, for server: SendResponse 
 template <typename SendCookie>
-class RpcServerMessageStream : public RpcByteStream
+class ServerMessageStream : public ByteStream
 {
 public:
     enum RoleType
@@ -31,10 +30,10 @@ public:
     };
 
 public:
-    RpcServerMessageStream(RoleType role_type,
+    ServerMessageStream(RoleType role_type,
                      IOService& io_service,
-                     const RpcEndpoint& endpoint)
-        : RpcByteStream(io_service, endpoint) //parent class
+                     const Endpoint& endpoint)
+        : ByteStream(io_service, endpoint) //parent class
         , _role_type(role_type)
         , _pending_message_count(0)
         , _pending_data_size(0)
@@ -60,10 +59,11 @@ public:
         , _send_token(TOKEN_FREE)
         , _receive_token(TOKEN_FREE)
     {
-        RpcRequestParser::RegisteredParsers(&_rpc_request_parsers);
+        // TODO
+        //RequestParser::RegisteredParsers(&_rpc_request_parsers);
     }
 
-    virtual ~RpcServerMessageStream()
+    virtual ~ServerMessageStream()
     {
         if (_tran_buf != NULL)
         {
@@ -93,49 +93,49 @@ public:
             const ReadBufferPtr& message,
             const SendCookie& cookie)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         if (is_closed())
         {
-            on_send_failed(RPC_ERROR_CONNECTION_CLOSED, message, cookie);
+            on_send_failed(HDCS_NETWORK_ERROR_CONNECTION_CLOSED, message, cookie);
             return;
         }
         put_into_pending_queue(message, cookie);
         try_start_send();
     }
-
+/*
     // Set the flow controller.
     void set_flow_controller(const FlowControllerPtr& flow_controller)
     {
         _flow_controller = flow_controller;
     }
-
+*/
     // Set the max size of pending buffer for send.
-    void set_max_pending_buffer_size(int64 max_pending_buffer_size)
+    void set_max_pending_buffer_size(int64_t max_pending_buffer_size)
     {
         _max_pending_buffer_size = max_pending_buffer_size;
     }
 
     // Get the max size of pending buffer for send.
-    int64 max_pending_buffer_size() const
+    int64_t max_pending_buffer_size() const
     {
         return _max_pending_buffer_size;
     }
 
     // Get the current count of messages in the pending queue.
-    int64 pending_message_count() const
+    int64_t pending_message_count() const
     {
         return _pending_message_count + _swapped_message_count;
     }
 
     // Get the current data size of messages in the pending queue.
-    int64 pending_data_size() const
+    int64_t pending_data_size() const
     {
         return _pending_data_size + _swapped_data_size;
     }
 
     // Get the current buffer size occupied by the pending queue.
     // This size may be larger than "pending_data_size".
-    int64 pending_buffer_size() const
+    int64_t pending_buffer_size() const
     {
         return _pending_buffer_size + _swapped_buffer_size;
     }
@@ -192,21 +192,20 @@ protected:
 
     // Hook function when send message failed.
     virtual void on_send_failed(
-            RpcErrorCode error_code,
+            ErrorCode error_code,
             const ReadBufferPtr& message,
             const SendCookie& cookie) = 0;
 
     // Hook function when received message.
-    // @param request the RPC request object.
+    // @param request the request object. // TODO TODO TODO TODO TODO
     virtual void on_received(
-            const RpcRequestPtr& request) = 0;
+            const RequestPtr& request) = 0;
 
 private:
 
-    // the following three function, implement pure virtual function.
     virtual bool on_connected()
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         // prepare receiving
         reset_receiving_env();
         if (!reset_tran_buf())
@@ -221,7 +220,7 @@ private:
             const boost::system::error_code& error,
             std::size_t bytes_transferred)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
 
         if (!is_connected()) return;
 
@@ -229,9 +228,9 @@ private:
         {
             if (error != boost::asio::error::eof)
             {
-                SLOG(ERROR, "on_read_some(): %s: read error: %s",
-                        RpcEndpointToString(_remote_endpoint).c_str(),
-                        error.message().c_str());
+                //SLOG(ERROR, "on_read_some(): %s: read error: %s",
+                //        EndpointToString(_remote_endpoint).c_str(),
+                //        error.message().c_str());
             }
 
             close(error.message());
@@ -242,7 +241,7 @@ private:
         ++_total_received_count;
         _total_received_size += bytes_transferred;
 
-        std::deque<RpcRequestPtr> received_messages;
+        std::deque<RequestPtr> received_messages;
         if (!split_and_process_message(_receiving_data,
                     static_cast<int>(bytes_transferred), &received_messages))
         {
@@ -278,16 +277,16 @@ private:
             const boost::system::error_code& error,
             std::size_t bytes_transferred)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
 
         if (!is_connected()) return;
 
         if (error)
         {
-            SLOG(ERROR, "on_write_some(): %s: write error: %s",
-                    RpcEndpointToString(_remote_endpoint).c_str(),
-                    error.message().c_str());
-            on_send_failed(RPC_ERROR_CHANNEL_BROKEN, _sending_message, _sending_cookie);
+            //SLOG(ERROR, "on_write_some(): %s: write error: %s",
+            //        EndpointToString(_remote_endpoint).c_str(),
+            //        error.message().c_str());
+            on_send_failed(HDCS_NETWORK_ERROR_CHANNEL_BROKEN, _sending_message, _sending_cookie);
             clear_sending_env();
             close(error.message());
             return;
@@ -311,7 +310,7 @@ private:
             else
             {
                 // current message is completely sent
-                SCHECK_EQ(_sent_size, _sending_message->ByteCount());
+                //SCHECK_EQ(_sent_size, _sending_message->ByteCount());
 
                 // call hook function
                 on_sent(_sending_message, _sending_cookie);
@@ -332,7 +331,7 @@ private:
         else
         {
             // only sent part of the data
-            SCHECK_LT(static_cast<int>(bytes_transferred), _sending_size);
+            //SCHECK_LT(static_cast<int>(bytes_transferred), _sending_size);
             
             // start sending the remaining data
             _sending_data += bytes_transferred;
@@ -348,7 +347,7 @@ private:
             const ReadBufferPtr& message,
             const SendCookie& cookie)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         ScopedLocker<FastLock> _(_pending_lock);
         _pending_calls.push_back(PendingItem(message, cookie));
         ++_pending_message_count;
@@ -363,7 +362,7 @@ private:
             const ReadBufferPtr& message,
             const SendCookie& cookie)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
         _swapped_calls.push_front(PendingItem(message, cookie));
         ++_swapped_message_count;
         _swapped_data_size += message->TotalCount();
@@ -387,7 +386,7 @@ private:
             ReadBufferPtr* message,
             SendCookie* cookie)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
 
         if (_swapped_calls.empty() && _pending_message_count > 0)
         {
@@ -419,9 +418,9 @@ private:
         }
 
         // no message found
-        SCHECK_EQ(0, _swapped_message_count);
-        SCHECK_EQ(0, _swapped_data_size);
-        SCHECK_EQ(0, _swapped_buffer_size);
+        //SCHECK_EQ(0, _swapped_message_count);
+        //SCHECK_EQ(0, _swapped_data_size);
+        //SCHECK_EQ(0, _swapped_buffer_size);
         return false;
     }
 
@@ -432,7 +431,7 @@ private:
     // If succeed, the token must be acquired.
     bool try_start_receive()
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
 
         if (_receive_token == TOKEN_LOCK)
         {
@@ -457,9 +456,10 @@ private:
         if (is_connected() 
                 && atomic_comp_swap(&_receive_token, TOKEN_LOCK, TOKEN_FREE) == TOKEN_FREE)
         {
-            SCHECK(_receiving_data != NULL);
-            SCHECK(_receiving_size > 0);
-            if ((_read_quota_token = _flow_controller->acquire_read_quota(_receiving_size)) <= 0)
+            //SCHECK(_receiving_data != NULL);
+            //SCHECK(_receiving_size > 0);
+            //if ((_read_quota_token = _flow_controller->acquire_read_quota(_receiving_size)) <= 0)
+            if (false) // TODO 
             {
                 // no network quota
                 atomic_comp_swap(&_receive_token, TOKEN_FREE, TOKEN_LOCK);
@@ -481,7 +481,7 @@ private:
     // If succeed, the token must be acquired.
     bool try_start_send()
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
 
         if (_send_token == TOKEN_LOCK)
         {
@@ -504,13 +504,14 @@ private:
                 if (!on_sending(_sending_message, _sending_cookie))
                 {
                     // need not send
-                    on_send_failed(RPC_ERROR_REQUEST_CANCELED, _sending_message, _sending_cookie);
+                    on_send_failed(HDCS_NETWORK_ERROR_REQUEST_CANCELED, _sending_message, _sending_cookie);
                     clear_sending_env();
 
                     atomic_comp_swap(&_send_token, TOKEN_FREE, TOKEN_LOCK);
                 }
-                else if ((_write_quota_token = _flow_controller->acquire_write_quota(
-                                _sending_message->TotalCount())) <= 0)
+                //else if ((_write_quota_token = _flow_controller->acquire_write_quota(
+                //                _sending_message->TotalCount())) <= 0)
+                else if (false) // TODO flow_controller
                 {
                     // no network quota
                     insert_into_pending_queue(_sending_message, _sending_cookie);
@@ -525,7 +526,7 @@ private:
                     _sent_size = 0;
                     bool ret = _sending_message->Next(
                             reinterpret_cast<const void**>(&_sending_data), &_sending_size);
-                    SCHECK(ret);
+                    //SCHECK(ret);
                     async_write_some(_sending_data, _sending_size);
                     started = true;
                     break;
@@ -577,9 +578,9 @@ private:
     //              in "received_messages", may be empty.
     // @return false if error occured, for example bad message stream.
     bool split_and_process_message(char* data, int size,
-            std::deque<RpcRequestPtr>* received_messages)
+            std::deque<RequestPtr>* received_messages)
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
+        //FUNCTION_TRACE;
 
         while (size > 0)
         {
@@ -597,7 +598,8 @@ private:
                 }
                 data += consumed;
                 size -= consumed;
-                if (!choose_rpc_request_parser())
+                //if (!choose_rpc_request_parser()) //TODO
+                if (false)
                 {
                     // no parser identify the magic string
                     return false;
@@ -621,7 +623,7 @@ private:
             }
             data += consumed;
             size -= consumed;
-            RpcRequestPtr request = _current_rpc_request_parser->GetRequest();
+            RequestPtr request = _current_rpc_request_parser->GetRequest();
             request->SetLocalEndpoint(_local_endpoint);
             request->SetRemoteEndpoint(_remote_endpoint);
             request->SetReceivedTime(ptime_now());
@@ -634,33 +636,37 @@ private:
     // Choose the proper request parser.
     //
     // @return false if no parser matched.
-    bool choose_rpc_request_parser()
+    /*
+    bool choose_request_parser()
     {
         // usually, one channal always use the same parser,
         // so first try to use the parser used by the last request
-        if (_current_rpc_request_parser
-                && _current_rpc_request_parser->CheckMagicString(_magic_string))
+        if (_current_request_parser
+                && _current_request_parser->CheckMagicString(_magic_string))
         {
             return true;
         }
         // the last parser not match, then find in all parsers
-        std::vector<RpcRequestParserPtr>::const_iterator it = _rpc_request_parsers.begin();
-        std::vector<RpcRequestParserPtr>::const_iterator end = _rpc_request_parsers.end();
+        std::vector<RequestParserPtr>::const_iterator it = _request_parsers.begin();
+        std::vector<RequestParserPtr>::const_iterator end = _request_parsers.end();
         for (; it != end; ++it)
         {
             if ((*it)->CheckMagicString(_magic_string))
             {
-                _current_rpc_request_parser = *it;
+                _current_request_parser = *it;
                 return true;
             }
         }
         // no parser match, print error
         std::string magic_str = StringUtils::c_escape_string(_magic_string, sizeof(_magic_string));
-        SLOG(ERROR, "choose_rpc_request_parser(): %s: un-identified magic string: %s",
-                RpcEndpointToString(_remote_endpoint).c_str(), magic_str.c_str());
-        _current_rpc_request_parser.reset();
+        SLOG(ERROR, "choose_request_parser(): %s: un-identified magic string: %s",
+                EndpointToString(_remote_endpoint).c_str(), magic_str.c_str());
+        _current_request_parser.reset();
         return false;
     }
+    */
+
+    bool choose_request_parser(){} // TODO delete ..
 
     // Clear temp variables for sending message.
     void clear_sending_env()
@@ -675,9 +681,9 @@ private:
     // Clear temp variables for receiving message.
     void reset_receiving_env()
     {
-        if (_current_rpc_request_parser)
+        if (_current_request_parser)
         {
-            _current_rpc_request_parser->Reset();
+            _current_request_parser->Reset();
         }
         _magic_string_recved_bytes = 0;
         _cur_recved_bytes = 0;
@@ -694,11 +700,11 @@ private:
         }
 
         _tran_buf = reinterpret_cast<char*>(
-                TranBufPool::malloc(SOFA_PBRPC_TRAN_BUF_BLOCK_MAX_FACTOR));
+                TranBufPool::malloc(HDCS_NETWORK_TRAN_BUF_BLOCK_MAX_FACTOR));
         if(_tran_buf == NULL)
         {
             SLOG(ERROR, "reset_tran_buf(): %s: malloc buffer failed: out of memory",
-                    RpcEndpointToString(_remote_endpoint).c_str());
+                    EndpointToString(_remote_endpoint).c_str());
             return false;
         }
         _receiving_data = reinterpret_cast<char*>(_tran_buf);
@@ -722,30 +728,30 @@ private:
 
     // TODO improve sync queue performance
     volatile int _pending_message_count;
-    volatile int64 _pending_data_size;
-    volatile int64 _pending_buffer_size;
+    volatile int64_t _pending_data_size;
+    volatile int64_t _pending_buffer_size;
     std::deque<PendingItem> _pending_calls;
     FastLock _pending_lock;
     std::deque<PendingItem> _swapped_calls;
     volatile int _swapped_message_count;
-    volatile int64 _swapped_data_size;
-    volatile int64 _swapped_buffer_size;
+    volatile int64_t _swapped_data_size;
+    volatile int64_t _swapped_buffer_size;
 
-    // flow control
-    FlowControllerPtr _flow_controller;
-    int64 _max_pending_buffer_size;
-    volatile int32 _read_quota_token; // <=0 means no quota
-    volatile int32 _write_quota_token; // <=0 means no quota
+    // flow control TODO
+    //FlowControllerPtr _flow_controller;
+    int64_t _max_pending_buffer_size;
+    volatile int32_t _read_quota_token; // <=0 means no quota
+    volatile int32_t _write_quota_token; // <=0 means no quota
     // statistics
-    int64 _total_sent_count;
-    int64 _total_sent_size;
-    int64 _total_received_count;
-    int64 _total_received_size;
+    int64_t _total_sent_count;
+    int64_t _total_sent_size;
+    int64_t _total_received_count;
+    int64_t _total_received_size;
 
     // temp variables for sending message
     ReadBufferPtr _sending_message; //current sending message
     SendCookie _sending_cookie; // cookie of the message
-    int64 _sent_size; // current sent size of the message
+    int64_t _sent_size; // current sent size of the message
     const char* _sending_data; // current sending data, weak ptr
     int _sending_size; // size of the current sending data
 
@@ -753,22 +759,23 @@ private:
     int _magic_string_recved_bytes;
     int _cur_recved_bytes;
 
-    std::vector<RpcRequestParserPtr> _rpc_request_parsers;
-    RpcRequestParserPtr _current_rpc_request_parser;
+    // TODO
+    ///std::vector<RequestParserPtr> _request_parsers;
+    //RequestParserPtr _current_request_parser;
 
     // tran buf for reading data
     char* _tran_buf; // strong ptr
     char* _receiving_data; // weak ptr
-    int64 _receiving_size;
+    int64_t _receiving_size;
 
     // send and receive token
     static const int TOKEN_FREE = 0;
     static const int TOKEN_LOCK = 1;
     volatile int _send_token;
     volatile int _receive_token;
-}; // class RpcServerMessageStream
+};
 
-} // namespace pbrpc
-} // namespace sofa
+}  
+}  
 
-#endif // _SOFA_PBRPC_RPC_SERVER_MESSAGE_STREAM_H_
+#endif  

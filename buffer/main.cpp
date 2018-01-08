@@ -1,10 +1,9 @@
 #include <iostream>
 
 
-//#include "buf_handle.h"
-//#include "atomic.h"
+#include "buf_handle.h"
 #include "tran_buf_pool.h"
-//#include "buffer.h"
+#include "buffer.h"
 //#include "flow_controller.h"
 
 using namespace std;

@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include <google/protobuf/service.h>
+
 #include "../common/smart_ptr/smart_ptr.hpp"
 //#include <sofa/pbrpc/rpc_option.pb.h>
 
@@ -12,8 +14,8 @@ namespace networking {
 
 class ControllerImpl;
 
-//class Controller : public google::protobuf::Controller
-class Controller
+class Controller:public google::protobuf::RpcController
+//class Controller
 {
 public:
     Controller();
@@ -161,8 +163,7 @@ public:
     //
     // NotifyOnCancel() must be called no more than once per request.
     // TODO
-    //virtual void NotifyOnCancel(google::protobuf::Closure* callback);
-    virtual void NotifyOnCancel();
+    virtual void NotifyOnCancel(google::protobuf::Closure* callback);
 
 public:
     const hdcs::networking::shared_ptr<ControllerImpl>& impl() const

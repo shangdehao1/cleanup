@@ -1,14 +1,14 @@
-#ifndef _SOFA_PBRPC_RPC_CLIENT_H_
-#define _SOFA_PBRPC_RPC_CLIENT_H_
+#ifndef CLIENT_H_
+#define CLIENT_H_
 
-#include <sofa/pbrpc/common.h>
+#include "client_impl.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-class RpcClientImpl;
+class ClientImpl;
 
-struct RpcClientOptions {
+struct ClientOptions {
     int work_thread_num;         // num of threads used for network handing, default 4.
     int callback_thread_num;     // num of threads used for async callback, default 4.
 
@@ -36,7 +36,7 @@ struct RpcClientOptions {
     // default is -1
     int connect_timeout;
 
-    RpcClientOptions()
+    ClientOptions()
         : work_thread_num(4)
         , callback_thread_num(4)
         , keep_alive_time(-1)
@@ -47,14 +47,14 @@ struct RpcClientOptions {
     {}
 };
 
-class RpcClient
+class Client
 {
 public:
-    explicit RpcClient(const RpcClientOptions& options = RpcClientOptions());
-    virtual ~RpcClient();
+    explicit Client(const ClientOptions& options = ClientOptions());
+    virtual ~Client();
 
     // Get the current rpc client options.
-    RpcClientOptions GetOptions();
+    ClientOptions GetOptions();
 
     // Reset the rpc client options.
     //
@@ -65,12 +65,12 @@ public:
     //
     // Though you want to reset only part of these options, the other options also
     // need to be set.  Maybe you can reset by this way:
-    //     RpcClientOptions options = rpc_client->GetOptions();
+    //     ClientOptions options = rpc_client->GetOptions();
     //     options.max_throughput_in = new_max_throughput_in; // reset some options
     //     rpc_client->ResetOptions(options);
     //
     // The old and new value of reset options will be print to INFO log.
-    void ResetOptions(const RpcClientOptions& options);
+    void ResetOptions(const ClientOptions& options);
 
     // Get the count of current alive connections.
     int ConnectionCount();
@@ -79,17 +79,17 @@ public:
     void Shutdown();
 
 public:
-    const sofa::pbrpc::shared_ptr<RpcClientImpl>& impl() const
+    const hdcs::networking::shared_ptr<ClientImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    sofa::pbrpc::shared_ptr<RpcClientImpl> _impl;
+    sofa::pbrpc::shared_ptr<ClientImpl> _impl;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcClient);
-}; // class RpcClient
+    //DISALLOW_EVIL_CONSTRUCTORS(Client);
+};
 
-} // namespace pbrpc
-} // namespace sofa
-#endif // _SOFA_PBRPC_RPC_CLIENT_H_
+} // namespace 
+} // namespace 
+#endif // CLIENT_H_

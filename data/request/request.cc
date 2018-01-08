@@ -1,6 +1,7 @@
-#include <sofa/pbrpc/rpc_request.h>
-#include <sofa/pbrpc/rpc_server_stream.h>
-#include <sofa/pbrpc/closure.h>
+
+#include "request.h"
+#include "../../stream/server/server_stream.h"
+#include "../../closure/closure.h"
 
 namespace hdcs {
 namespace networking{
@@ -11,6 +12,7 @@ void Request::CallMethod(
         google::protobuf::Message* request,
         google::protobuf::Message* response)
 {
+
     PTime time_now = ptime_now();
     const ControllerImplPtr& cntl = controller->impl();
 
@@ -27,7 +29,7 @@ void Request::CallMethod(
 
     if (cntl->ServerTimeout() > 0)
     {
-        int64 server_wait_time_us =
+        int64_t server_wait_time_us =
             (time_now - cntl->RequestReceivedTime()).total_microseconds();
         if (server_wait_time_us > cntl->ServerTimeout() * 1000)
         {
@@ -59,9 +61,9 @@ void Request::OnCallMethodDone(
         google::protobuf::Message* response)
 {
     PTime time_now = ptime_now();
-    const RpcControllerImplPtr& cntl = controller->impl();
+    const ControllerImplPtr& cntl = controller->impl();
     cntl->SetFinishProcessTime(time_now);
-    int64 process_time_us =
+    int64_t process_time_us =
         (cntl->FinishProcessTime() - cntl->StartProcessTime()).total_microseconds();
     method_board->ReportProcessEnd(!cntl->Failed(), process_time_us);
 
@@ -79,7 +81,7 @@ void Request::OnCallMethodDone(
 
     if (cntl->ServerTimeout() > 0)
     {
-        int64 server_used_time_us =
+        int64_t server_used_time_us =
             (cntl->FinishProcessTime() - cntl->RequestReceivedTime()).total_microseconds();
         if (server_used_time_us > cntl->ServerTimeout() * 1000)
         {
@@ -150,10 +152,10 @@ void Request::SendSucceedResponse(
 
 void Request::SendFailedResponse(
         const ServerStreamWPtr& stream,
-        int32 error_code,
+        int32_t error_code,
         const std::string& reason)
 {
-    uint64 sequence_id = SequenceId();
+    uint64_t sequence_id = SequenceId();
     ServerStreamPtr real_stream = stream.lock();
     if (!real_stream)
     {
@@ -178,7 +180,7 @@ void Request::SendFailedResponse(
 void Request::OnSendResponseDone(
         ErrorCode error_code)
 {
-    if (error_code == RPC_SUCCESS)
+    if (error_code == HDCS_NETWORK_SUCCESS)
     {
         //SLOG(DEBUG, "OnSendResponseDone(): %s {%lu}: send succeed",
         //        EndpointToString(_remote_endpoint).c_str(), SequenceId());

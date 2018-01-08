@@ -1,5 +1,5 @@
-#ifndef RPC_REQUEST_PARSER_H_
-#define RPC_REQUEST_PARSER_H_
+#ifndef REQUEST_PARSER_H_
+#define REQUEST_PARSER_H_
 
 #include <vector>
 
@@ -42,14 +42,14 @@ public:
     //
     // Preconditions:
     //   * Parse() returns 1
-    virtual RpcRequestPtr GetRequest() = 0;
+    virtual RequestPtr GetRequest() = 0;
 
 public:
     // Get all registered parsers.
-    static void RegisteredParsers(std::vector<RpcRequestParserPtr>* parsers);
-}; // class RpcRequestParser
+    static void RegisteredParsers(std::vector<RequestParserPtr>* parsers);
+};
 
-} // 
-} // 
+}  
+}  
 
 #endif

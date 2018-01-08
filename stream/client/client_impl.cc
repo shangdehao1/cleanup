@@ -6,10 +6,10 @@
 #include <sofa/pbrpc/flow_controller.h>
 #include <sofa/pbrpc/compressed_stream.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)/*{{{*/
+ClientImpl::ClientImpl(const ClientOptions& options)
     : _options(options)
     , _is_running(false)
     , _next_request_id(0)
@@ -28,7 +28,7 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)/*{{{*/
     _keep_alive_ticks = _options.keep_alive_time == -1 ?
         -1 : std::max(1, _options.keep_alive_time) * _ticks_per_second;
 
-    LOG(INFO) << "RpcClientImpl(): quota_in="
+    LOG(INFO) << "ClientImpl(): quota_in="
               << (_slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L))
               << "MB/s, quota_out="
               << (_slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L))
@@ -37,15 +37,15 @@ RpcClientImpl::RpcClientImpl(const RpcClientOptions& options)/*{{{*/
               << "MB, keep_alive_time="
               << (_keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second)
               << "seconds";
-}/*}}}*/
+}
 
-RpcClientImpl::~RpcClientImpl()/*{{{*/
+ClientImpl::~ClientImpl()
 {
     SOFA_PBRPC_FUNCTION_TRACE;
     Stop();
-}/*}}}*/
+}
 
-void RpcClientImpl::Start()
+void ClientImpl::Start()
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (_is_running) return;
@@ -69,10 +69,10 @@ void RpcClientImpl::Start()
     _timer_worker.reset(new TimerWorker(_maintain_thread_group->io_service()));
     _timer_worker->set_time_duration(time_duration_milliseconds(MAINTAIN_INTERVAL_IN_MS)); 
     _timer_worker->set_work_routine(boost::bind(
-                &RpcClientImpl::TimerMaintain, shared_from_this(), _1));
+                &ClientImpl::TimerMaintain, shared_from_this(), _1));
     _timer_worker->start();
 
-    _timeout_manager.reset(new RpcTimeoutManager(_maintain_thread_group->io_service()));
+    _timeout_manager.reset(new TimeoutManager(_maintain_thread_group->io_service()));
     _timeout_manager->start();
 
     _is_running = true;
@@ -80,7 +80,7 @@ void RpcClientImpl::Start()
     LOG(INFO) << "Start(): rpc client started";
 }
 
-void RpcClientImpl::Stop()/*{{{*/
+void ClientImpl::Stop()
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (!_is_running) return;
@@ -103,14 +103,14 @@ void RpcClientImpl::Stop()/*{{{*/
     _flow_controller.reset();
 
     LOG(INFO) << "Stop(): rpc client stopped";
-}/*}}}*/
+}
 
-RpcClientOptions RpcClientImpl::GetOptions()/*{{{*/
+ClientOptions ClientImpl::GetOptions()
 {
     return _options;
-}/*}}}*/
+}
 
-void RpcClientImpl::ResetOptions(const RpcClientOptions& options)/*{{{*/
+void ClientImpl::ResetOptions(const ClientOptions& options)
 {
     int64 old_slice_quota_in = _slice_quota_in;
     int64 old_slice_quota_out = _slice_quota_out;
@@ -157,24 +157,24 @@ void RpcClientImpl::ResetOptions(const RpcClientOptions& options)/*{{{*/
               << "seconds(old "
               << (old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second)
               << "seconds)";
-}/*}}}*/
+}
 
-int RpcClientImpl::ConnectionCount()/*{{{*/
+int ClientImpl::ConnectionCount()
 {
     ScopedLocker<FastLock> _(_stream_map_lock);
     return _stream_map.size();
-}/*}}}*/
+}
 
-// Rpc call method to remote endpoint.
+//  call method to remote endpoint.
 //
 // The call can be done in following cases:
 //
 // * send failed
 // * timeouted
 // * received response
-void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
+void ClientImpl::CallMethod(const google::protobuf::Message* request,
         google::protobuf::Message* response,
-        const RpcControllerImplPtr& cntl)
+        const ControllerImplPtr& cntl)
 {
     if (!_is_running)
     {
@@ -185,21 +185,21 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
 
     // get the stream
     // --stream means the connection between client and server.--sdh 
-    RpcClientStreamPtr stream = FindOrCreateStream(cntl->RemoteEndpoint());
+    ClientStreamPtr stream = FindOrCreateStream(cntl->RemoteEndpoint());
     if (!stream)
     {
         SLOG(ERROR, "CallMethod(): create socket stream failed: %s",
-                RpcEndpointToString(cntl->RemoteEndpoint()).c_str());
+                EndpointToString(cntl->RemoteEndpoint()).c_str());
         cntl->Done(RPC_ERROR_CREATE_STREAM, "create stream failed, maybe exceed connection limit");
         return;
     }
-    cntl->SetRpcClientStream(stream);
+    cntl->SetClientStream(stream);
 
     // check the pending buffer full
     if (stream->pending_buffer_size() > stream->max_pending_buffer_size())
     {
         SLOG(DEBUG, "CallMethod(): pending buffer full: %s",
-                RpcEndpointToString(cntl->RemoteEndpoint()).c_str());
+                EndpointToString(cntl->RemoteEndpoint()).c_str());
         cntl->Done(RPC_ERROR_SEND_BUFFER_FULL, "pending buffer full");
         return;
     }
@@ -208,8 +208,8 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     cntl->SetSequenceId(GenerateSequenceId());
 
     // prepare request buffer
-    RpcMeta meta;
-    meta.set_type(RpcMeta::REQUEST);
+    Meta meta;
+    meta.set_type(Meta::REQUEST);
     meta.set_sequence_id(cntl->SequenceId());
     meta.set_method(cntl->MethodId());
     int64 timeout = cntl->Timeout();
@@ -220,20 +220,20 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     meta.set_compress_type(cntl->RequestCompressType());
     meta.set_expected_response_compress_type(cntl->ResponseCompressType());
 
-    RpcMessageHeader header;
+    MessageHeader header;
     int header_size = sizeof(header);
     WriteBuffer write_buffer;
     int64 header_pos = write_buffer.Reserve(header_size);
     if (header_pos < 0)
     {
-        LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+        LOG(ERROR) << "CallMethod(): " << EndpointToString(cntl->RemoteEndpoint())
                    << ": reserve rpc message header failed";
         cntl->Done(RPC_ERROR_SERIALIZE_REQUEST, "reserve rpc message header failed");
         return;
     }
     if (!meta.SerializeToZeroCopyStream(&write_buffer))
     {
-        LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+        LOG(ERROR) << "CallMethod(): " << EndpointToString(cntl->RemoteEndpoint())
                    << ": serialize rpc meta failed";
         cntl->Done(RPC_ERROR_SERIALIZE_REQUEST, "serialize rpc meta failed");
         return;
@@ -253,7 +253,7 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     }
     if (!serialize_request_return)
     {
-        LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+        LOG(ERROR) << "CallMethod(): " << EndpointToString(cntl->RemoteEndpoint())
                    << ": serialize request message failed";
         cntl->Done(RPC_ERROR_SERIALIZE_REQUEST, "serialize request message failed");
         return;
@@ -267,14 +267,14 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     cntl->SetRequestBuffer(read_buffer);
 
     // push callback
-    cntl->PushDoneCallback(boost::bind(&RpcClientImpl::DoneCallback, shared_from_this(), response, _1));
+    cntl->PushDoneCallback(boost::bind(&ClientImpl::DoneCallback, shared_from_this(), response, _1));
 
     // add to timeout manager if need
     if (timeout > 0)
     {
         if (!_timeout_manager->add(cntl))
         {
-            LOG(ERROR) << "CallMethod(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+            LOG(ERROR) << "CallMethod(): " << EndpointToString(cntl->RemoteEndpoint())
                        << ": add to timeout manager failed: timeout=" << timeout << "ms";
             cntl->Done(RPC_ERROR_REQUEST_TIMEOUT, "add to timeout manager failed, maybe too short timeout");
             return;
@@ -285,20 +285,20 @@ void RpcClientImpl::CallMethod(const google::protobuf::Message* request,
     stream->call_method(cntl);
 }
 
-const ThreadGroupImplPtr& RpcClientImpl::GetCallbackThreadGroup() const
+const ThreadGroupImplPtr& ClientImpl::GetCallbackThreadGroup() const
 {
     return _callback_thread_group;
 }
 
-bool RpcClientImpl::ResolveAddress(const std::string& address,
-        RpcEndpoint* endpoint)
+bool ClientImpl::ResolveAddress(const std::string& address,
+        Endpoint* endpoint)
 {
     return sofa::pbrpc::ResolveAddress(_work_thread_group->io_service(), address, endpoint);
 }
 
-RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_endpoint)
+ClientStreamPtr ClientImpl::FindOrCreateStream(const Endpoint& remote_endpoint)
 {
-    RpcClientStreamPtr stream;
+    ClientStreamPtr stream;
     bool create = false;
     {
         ScopedLocker<FastLock> _(_stream_map_lock);
@@ -309,13 +309,13 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_e
         }
         else
         {
-            stream.reset(new RpcClientStream(_work_thread_group->io_service(), remote_endpoint));
+            stream.reset(new ClientStream(_work_thread_group->io_service(), remote_endpoint));
             stream->set_flow_controller(_flow_controller);
             stream->set_max_pending_buffer_size(_max_pending_buffer_size);
             stream->reset_ticks((ptime_now() - _epoch_time).ticks(), true);
             stream->set_connect_timeout(_options.connect_timeout);
             stream->set_closed_stream_callback(
-                    boost::bind(&RpcClientImpl::OnClosed, shared_from_this(), _1));
+                    boost::bind(&ClientImpl::OnClosed, shared_from_this(), _1));
 
             _stream_map[remote_endpoint] = stream;
             create = true;
@@ -328,7 +328,7 @@ RpcClientStreamPtr RpcClientImpl::FindOrCreateStream(const RpcEndpoint& remote_e
     return stream;
 }
 
-void RpcClientImpl::OnClosed(const RpcClientStreamPtr& stream)
+void ClientImpl::OnClosed(const ClientStreamPtr& stream)
 {
     if (!_is_running)
         return;
@@ -343,7 +343,7 @@ void RpcClientImpl::OnClosed(const RpcClientStreamPtr& stream)
     _stream_map.erase(stream->remote_endpoint());
 }
 
-void RpcClientImpl::StopStreams()
+void ClientImpl::StopStreams()
 {
     ScopedLocker<FastLock> _(_stream_map_lock);
     for (StreamMap::iterator it = _stream_map.begin();
@@ -353,16 +353,16 @@ void RpcClientImpl::StopStreams()
     }
 }
 
-void RpcClientImpl::ClearStreams()
+void ClientImpl::ClearStreams()
 {
     ScopedLocker<FastLock> _(_stream_map_lock);
     _stream_map.clear();
 }
 
-void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
-        const RpcControllerImplPtr& cntl)
+void ClientImpl::DoneCallback(google::protobuf::Message* response,
+        const ControllerImplPtr& cntl)
 {
-    // erase from RpcTimeoutManager
+    // erase from TimeoutManager
     _timeout_manager->erase(cntl->TimeoutId());
 
     // deserialize response
@@ -385,7 +385,7 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
         }
         if (!parse_response_return)
         {
-            LOG(ERROR) << "DoneCallback(): " << RpcEndpointToString(cntl->RemoteEndpoint())
+            LOG(ERROR) << "DoneCallback(): " << EndpointToString(cntl->RemoteEndpoint())
                        << ": parse response message pb failed";
             cntl->SetFailed(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "parse response message pb failed");
         }
@@ -393,7 +393,7 @@ void RpcClientImpl::DoneCallback(google::protobuf::Message* response,
 }
 
 // this function will actively be called...sdh
-void RpcClientImpl::TimerMaintain(const PTime& now)
+void ClientImpl::TimerMaintain(const PTime& now)
 {
     SOFA_PBRPC_FUNCTION_TRACE;
 
@@ -413,7 +413,7 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
         {
             for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                const RpcClientStreamPtr& stream = it->second;
+                const ClientStreamPtr& stream = it->second;
                 if (stream->is_closed())
                 {
                     continue;
@@ -443,7 +443,7 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
             trigger_list.reserve(streams.size());
             for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                const RpcClientStreamPtr& stream = it->second;
+                const ClientStreamPtr& stream = it->second;
                 if (stream->is_closed())
                 {
                     continue;
@@ -478,7 +478,7 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
             trigger_list.reserve(streams.size());
             for (StreamMap::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                const RpcClientStreamPtr& stream = it->second;
+                const ClientStreamPtr& stream = it->second;
                 if (stream->is_closed())
                 {
                     continue;
@@ -506,11 +506,10 @@ void RpcClientImpl::TimerMaintain(const PTime& now)
     _last_maintain_ticks = now_ticks;
 }
 
-uint64 RpcClientImpl::GenerateSequenceId()
+uint64 ClientImpl::GenerateSequenceId()
 {
     return static_cast<uint64>(++_next_request_id);
 }
-} // namespace pbrpc
-} // namespace sofa
+} // 
+} // 
 
-/* vim: set ts=4 sw=4 sts=4 tw=100 */

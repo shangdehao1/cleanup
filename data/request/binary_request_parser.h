@@ -1,17 +1,17 @@
-#ifndef BINARY_RPC_REQUEST_PARSER_H_
-#define BINARY_RPC_REQUEST_PARSER_H_
+#ifndef BINARY_REQUEST_PARSER_H_
+#define BINARY_REQUEST_PARSER_H_
 
-#include <sofa/pbrpc/rpc_request_parser.h>
-#include <sofa/pbrpc/binary_rpc_request.h>
+#include "request_parser.h"
+#include "binary_request.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-class BinaryRpcRequestParser : public RpcRequestParser
+class BinaryRequestParser : public RequestParser
 {
 public:
-    BinaryRpcRequestParser();
-    virtual ~BinaryRpcRequestParser();
+    BinaryRequestParser();
+    virtual ~BinaryRequestParser();
 
     virtual const char* Name();
 
@@ -21,7 +21,7 @@ public:
 
     virtual int Parse(const char* buf, int data_size, int offset, int* bytes_consumed);
 
-    virtual RpcRequestPtr GetRequest();
+    virtual RequestPtr GetRequest();
 
 private:
     enum ParseState
@@ -32,14 +32,12 @@ private:
     };
     ParseState _state; // current parsing state
     int _bytes_recved; // bytes received in current state
-    BinaryRpcRequestPtr _req;
+    BinaryRequestPtr _req;
 
-    static const int64 MAX_MESSAGE_SIZE;
-}; // class BinaryRpcRequestParser
+    static const int64_t MAX_MESSAGE_SIZE;
+}; 
 
-} // namespace pbrpc
-} // namespace sofa
+} 
+}
 
-#endif // _SOFA_PBRPC_BINARY_RPC_REQUEST_PARSER_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

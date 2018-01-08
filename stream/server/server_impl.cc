@@ -9,11 +9,11 @@
 #include <sofa/pbrpc/io_service_pool.h>
 #include <sofa/pbrpc/web_service.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,/*{{{*/
-        RpcServer::EventHandler* handler)
+ServerImpl::ServerImpl(const ServerOptions& options,
+        Server::EventHandler* handler)
     : _options(options)
     , _event_handler(handler)
     , _is_running(false)
@@ -26,8 +26,8 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,/*{{{*/
 {
     _service_pool.reset(new ServicePool(this));
 
-    _web_service.reset(new WebService(_service_pool));
-    _web_service->Init();
+    //_web_service.reset(new WebService(_service_pool));
+    //_web_service->Init();
 
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
 
@@ -47,41 +47,41 @@ RpcServerImpl::RpcServerImpl(const RpcServerOptions& options,/*{{{*/
 
     _switch_stat_slot_interval_ticks = _ticks_per_second * STAT_SLOT_SECONDS;
 
-    SLOG(INFO, "RpcServerImpl(): quota_in=%lldMB/s, quota_out=%lldMB/s"
-            ", max_pending_buffer_size=%lldMB, keep_alive_time=%lldseconds",
-            _slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L),
-            _slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L),
-            _max_pending_buffer_size / (1024L * 1024L),
-            _keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second);
-}/*}}}*/
+    //SLOG(INFO, "ServerImpl(): quota_in=%lldMB/s, quota_out=%lldMB/s"
+    //        ", max_pending_buffer_size=%lldMB, keep_alive_time=%lldseconds",
+    //        _slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L),
+    //        _slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L),
+    //        _max_pending_buffer_size / (1024L * 1024L),
+    //        _keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second);
+}
 
-RpcServerImpl::~RpcServerImpl()/*{{{*/
+ServerImpl::~ServerImpl()
 {
-    SOFA_PBRPC_FUNCTION_TRACE;
+    //FUNCTION_TRACE;
     Stop();
-    _web_service.reset();
+    //_web_service.reset();
     _service_pool.reset();
     if (_event_handler) delete _event_handler;
-}/*}}}*/
+}
 
-bool RpcServerImpl::Start(const std::string& server_address)/*{{{*/
+bool ServerImpl::Start(const std::string& server_address)
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (_is_running) return true;
 
     // flowcontroller
-    _flow_controller.reset(new FlowController(
-                _slice_quota_in == -1, _slice_quota_in,
-                _slice_quota_out == -1, _slice_quota_out));
+    //_flow_controller.reset(new FlowController(
+    //            _slice_quota_in == -1, _slice_quota_in,
+    //            _slice_quota_out == -1, _slice_quota_out));
 
     // ThreadGroupImpl
     _maintain_thread_group.reset(new ThreadGroupImpl(
-                1, "sofa_pbrpc_server_maintain_thread_group"));
+                1, "hdcs_network_server_maintain_thread_group"));
     if (!_maintain_thread_group->start())
     {
-        SLOG(ERROR, "Start(): start maintain thread group failed");
+        //SLOG(ERROR, "Start(): start maintain thread group failed");
         _maintain_thread_group.reset();
-        _flow_controller.reset();
+        //_flow_controller.reset();
     }
 
     // IoServicePool
@@ -91,10 +91,10 @@ bool RpcServerImpl::Start(const std::string& server_address)/*{{{*/
     _io_service_pool->set_dest_func(_options.work_thread_dest_func);
     if (!_io_service_pool->Run())
     {
-        SLOG(ERROR, "Start(): start io service pool failed");
+        //SLOG(ERROR, "Start(): start io service pool failed");
         _io_service_pool.reset();
         _maintain_thread_group.reset();
-        _flow_controller.reset();
+        //_flow_controller.reset();
         return false;
     }
 
@@ -102,51 +102,52 @@ bool RpcServerImpl::Start(const std::string& server_address)/*{{{*/
     _server_address = server_address;
     if (!ResolveAddress(_io_service_pool->GetIOService(), _server_address, &_listen_endpoint))
     {
-        SLOG(ERROR, "Start(): resolve server address failed: %s", _server_address.c_str());
+        //SLOG(ERROR, "Start(): resolve server address failed: %s", _server_address.c_str());
         _io_service_pool.reset();
         _maintain_thread_group.reset();
-        _flow_controller.reset();
+        //_flow_controller.reset();
         return false;
     }
 
     // listen endpoint
-    _listener.reset(new RpcListener(_io_service_pool, _listen_endpoint));
+    _listener.reset(new Listener(_io_service_pool, _listen_endpoint));
     _listener->set_create_callback(boost::bind(
-                &RpcServerImpl::OnCreated, shared_from_this(), _1));  // oncreated
+                &ServerImpl::OnCreated, shared_from_this(), _1));  // oncreated
     _listener->set_accept_callback(boost::bind(
-                &RpcServerImpl::OnAccepted, shared_from_this(), _1)); // onaccepted
+                &ServerImpl::OnAccepted, shared_from_this(), _1)); // onaccepted
     _listener->set_accept_fail_callback(boost::bind(
-                &RpcServerImpl::OnAcceptFailed, shared_from_this(), _1, _2)); //onacceptedfailed
+                &ServerImpl::OnAcceptFailed, shared_from_this(), _1, _2)); //onacceptedfailed
     if (!_listener->start_listen())
     {
-        SLOG(ERROR, "Start(): listen failed: %s", _server_address.c_str());
+        //SLOG(ERROR, "Start(): listen failed: %s", _server_address.c_str());
         _listener.reset();
         _io_service_pool.reset();
         _maintain_thread_group.reset();
-        _flow_controller.reset();
+        //_flow_controller.reset();
         return false;
     }
-    SLOG(INFO, "Start(): listen succeed: %s [%s]",
-            _server_address.c_str(), RpcEndpointToString(_listen_endpoint).c_str());
+    //SLOG(INFO, "Start(): listen succeed: %s [%s]",
+    //        _server_address.c_str(), EndpointToString(_listen_endpoint).c_str());
 
     // timer
+    /*
     _timer_worker.reset(new TimerWorker(_maintain_thread_group->io_service()));
     _timer_worker->set_time_duration(time_duration_milliseconds(MAINTAIN_INTERVAL_IN_MS));
     _timer_worker->set_work_routine(boost::bind(
-                &RpcServerImpl::TimerMaintain, shared_from_this(), _1)); // TimerMaintain will be started--sdh
+                &ServerImpl::TimerMaintain, shared_from_this(), _1)); // TimerMaintain will be started--sdh
     _timer_worker->start();
 
     if (!_options.disable_builtin_services) {
         _service_pool->RegisterService(new sofa::pbrpc::builtin::BuiltinServiceImpl(
                     shared_from_this(), _service_pool, _options.disable_list_service));
     }
-
+    */
     _is_running = true;
-    SLOG(INFO, "Start(): rpc server started");
+    //SLOG(INFO, "Start(): rpc server started");
     return true;
-}/*}}}*/
+}
 
-void RpcServerImpl::Stop()/*{{{*/
+void ServerImpl::Stop()
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (!_is_running) return;
@@ -164,28 +165,28 @@ void RpcServerImpl::Stop()/*{{{*/
 
     _io_service_pool.reset();
     _maintain_thread_group.reset();
-    _flow_controller.reset();
+    //_flow_controller.reset();
 
-    SLOG(INFO, "Stop(): rpc server stopped");
-}/*}}}*/
+    //SLOG(INFO, "Stop(): server stopped");
+}
 
-PTime RpcServerImpl::GetStartTime()/*{{{*/
+PTime ServerImpl::GetStartTime()
 {
     return _start_time;
-}/*}}}*/
+}
 
-RpcServerOptions RpcServerImpl::GetOptions()/*{{{*/
+ServerOptions ServerImpl::GetOptions()
 {
     return _options;
-}/*}}}*/
+}
 
-void RpcServerImpl::ResetOptions(const RpcServerOptions& options)/*{{{*/
+void ServerImpl::ResetOptions(const ServerOptions& options)
 {
-    int64 old_slice_quota_in = _slice_quota_in;
-    int64 old_slice_quota_out = _slice_quota_out;
-    int64 old_max_pending_buffer_size = _max_pending_buffer_size;
-    int64 old_keep_alive_ticks = _keep_alive_ticks;
-    int64 old_max_connection_count = _options.max_connection_count;
+    int64_t old_slice_quota_in = _slice_quota_in;
+    int64_t old_slice_quota_out = _slice_quota_out;
+    int64_t old_max_pending_buffer_size = _max_pending_buffer_size;
+    int64_t old_keep_alive_ticks = _keep_alive_ticks;
+    int64_t old_max_connection_count = _options.max_connection_count;
 
     _options.max_throughput_in = options.max_throughput_in;
     _options.max_throughput_out = options.max_throughput_out;
@@ -213,57 +214,57 @@ void RpcServerImpl::ResetOptions(const RpcServerOptions& options)/*{{{*/
 
     if (_slice_quota_in != old_slice_quota_in)
     {
-        _flow_controller->reset_read_quota(_slice_quota_in == -1, _slice_quota_in);
+        //_flow_controller->reset_read_quota(_slice_quota_in == -1, _slice_quota_in);
     }
 
     if (_slice_quota_out != old_slice_quota_out)
     {
-        _flow_controller->reset_write_quota(_slice_quota_out == -1, _slice_quota_out);
+        //_flow_controller->reset_write_quota(_slice_quota_out == -1, _slice_quota_out);
     }
 
-    SLOG(INFO, "ResetOptions(): quota_in=%lldMB/s(old %lldMB/s)"
-            ", quota_out=%lldMB/s(old %lldMB/s)"
-            ", max_pending_buffer_size=%lldMB(old %lldMB)"
-            ", keep_alive_time=%lldseconds(old %lldseconds)"
-            ", max_connection_count=%lld(old %lld)",
-            _slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L),
-            old_slice_quota_in == -1 ? -1 : old_slice_quota_in * _slice_count / (1024L * 1024L),
-            _slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L),
-            old_slice_quota_out == -1 ? -1 : old_slice_quota_out * _slice_count / (1024L * 1024L),
-            _max_pending_buffer_size / (1024L * 1024L),
-            old_max_pending_buffer_size / (1024L * 1024L),
-            _keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second,
-            old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second,
-            _options.max_connection_count,
-            old_max_connection_count);
-}/*}}}*/
+    //SLOG(INFO, "ResetOptions(): quota_in=%lldMB/s(old %lldMB/s)"
+    //        ", quota_out=%lldMB/s(old %lldMB/s)"
+    //        ", max_pending_buffer_size=%lldMB(old %lldMB)"
+    //        ", keep_alive_time=%lldseconds(old %lldseconds)"
+    //        ", max_connection_count=%lld(old %lld)",
+    //        _slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L),
+    //        old_slice_quota_in == -1 ? -1 : old_slice_quota_in * _slice_count / (1024L * 1024L),
+    //        _slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L),
+    //        old_slice_quota_out == -1 ? -1 : old_slice_quota_out * _slice_count / (1024L * 1024L),
+    //        _max_pending_buffer_size / (1024L * 1024L),
+    //        old_max_pending_buffer_size / (1024L * 1024L),
+    //        _keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second,
+    //        old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second,
+    //        _options.max_connection_count,
+    //        old_max_connection_count);
+}
 
-// register service into io_service_pool/*{{{*/
-bool RpcServerImpl::RegisterService(google::protobuf::Service* service, bool take_ownership)
+// register service into io_service_pool
+bool ServerImpl::RegisterService(google::protobuf::Service* service, bool take_ownership)
 {
     return _service_pool->RegisterService(service, take_ownership);
-}/*}}}*/
+}
 
-// all service will reside at service_pool/*{{{*/
-int RpcServerImpl::ServiceCount()
+// all service will reside at service_pool
+int ServerImpl::ServiceCount()
 {
     return _service_pool->ServiceCount();
-}/*}}}*/
+}
 
-int RpcServerImpl::ConnectionCount()/*{{{*/
+int ServerImpl::ConnectionCount()
 {
     ScopedLocker<FastLock> _(_stream_set_lock);
     return _stream_set.size(); // streamSet store all connection.
-}/*}}}*/
+}
 
 // get request information from all stream queue...sdh
-void RpcServerImpl::GetPendingStat(int64* pending_message_count,/*{{{*/
-        int64* pending_buffer_size, int64* pending_data_size)
+void ServerImpl::GetPendingStat(int64_t* pending_message_count,
+        int64_t* pending_buffer_size, int64* pending_data_size)
 {
     ScopedLocker<FastLock> _(_stream_set_lock);
-    int64 message_count = 0;
-    int64 buffer_size = 0;
-    int64 data_size = 0;
+    int64_t message_count = 0;
+    int64_t buffer_size = 0;
+    int64_t data_size = 0;
     for (StreamSet::iterator it = _stream_set.begin();
             it != _stream_set.end(); ++it)
     {
@@ -274,20 +275,20 @@ void RpcServerImpl::GetPendingStat(int64* pending_message_count,/*{{{*/
     *pending_message_count = message_count;
     *pending_buffer_size = buffer_size;
     *pending_data_size = data_size;
-}/*}}}*/
+}
 
-bool RpcServerImpl::IsListening()/*{{{*/
+bool ServerImpl::IsListening()
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     return _is_running && !_listener->is_closed();
-}/*}}}*/
+}
 
-bool RpcServerImpl::RestartListen()/*{{{*/
+bool ServerImpl::RestartListen()
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (!_is_running)
     {
-        SLOG(ERROR, "RestartListen(): server not in running");
+        //SLOG(ERROR, "RestartListen(): server not in running");
         return false;
     }
 
@@ -295,33 +296,33 @@ bool RpcServerImpl::RestartListen()/*{{{*/
     _listener->close();
 
     // reset and restart listener
-    _listener.reset(new RpcListener(_io_service_pool, _listen_endpoint));
+    _listener.reset(new Listener(_io_service_pool, _listen_endpoint));
     _listener->set_create_callback(boost::bind(
-                &RpcServerImpl::OnCreated, shared_from_this(), _1));
+                &ServerImpl::OnCreated, shared_from_this(), _1));
     _listener->set_accept_callback(boost::bind(
-                &RpcServerImpl::OnAccepted, shared_from_this(), _1));
+                &ServerImpl::OnAccepted, shared_from_this(), _1));
     _listener->set_accept_fail_callback(boost::bind(
-                &RpcServerImpl::OnAcceptFailed, shared_from_this(), _1, _2));
+                &ServerImpl::OnAcceptFailed, shared_from_this(), _1, _2));
     if (!_listener->start_listen())
     {
-        SLOG(ERROR, "RestartListen(): listen failed: %s", _server_address.c_str());
+        //SLOG(ERROR, "RestartListen(): listen failed: %s", _server_address.c_str());
         return false;
     }
-    SLOG(INFO, "RestartListen(): restart listener succeed");
+    //SLOG(INFO, "RestartListen(): restart listener succeed");
     return true;
-}/*}}}*/
+}
 
-void RpcServerImpl::OnCreated(const RpcServerStreamPtr& stream)/*{{{*/
+void ServerImpl::OnCreated(const ServerStreamPtr& stream)
 {
-    stream->set_flow_controller(_flow_controller);
+    //stream->set_flow_controller(_flow_controller);
     stream->set_received_request_callback(
-            boost::bind(&RpcServerImpl::OnReceived, shared_from_this(), _1, _2));
+            boost::bind(&ServerImpl::OnReceived, shared_from_this(), _1, _2));
     stream->set_closed_stream_callback(
-            boost::bind(&RpcServerImpl::OnClosed, shared_from_this(), _1));
-}/*}}}*/
+            boost::bind(&ServerImpl::OnClosed, shared_from_this(), _1));
+}
 
 // when receiving a connction, this callback will be called.
-void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)/*{{{*/
+void ServerImpl::OnAccepted(const ServerStreamPtr& stream)
 {
     if (!_is_running)
     {
@@ -341,9 +342,9 @@ void RpcServerImpl::OnAccepted(const RpcServerStreamPtr& stream)/*{{{*/
 
     ScopedLocker<FastLock> _(_stream_set_lock);
     _stream_set.insert(stream); // insert this stream. 
-}/*}}}*/
+}
 
-void RpcServerImpl::OnAcceptFailed(RpcErrorCode error_code, const std::string& error_text)/*{{{*/
+void ServerImpl::OnAcceptFailed(ErrorCode error_code, const std::string& error_text)
 {
     if (!_is_running)
         return;
@@ -353,31 +354,31 @@ void RpcServerImpl::OnAcceptFailed(RpcErrorCode error_code, const std::string& e
     {
         _event_handler->NotifyAcceptFailed(error_code, error_text);
     }
-}/*}}}*/
+}
 
 // callback for receiving request from client...sdh
-void RpcServerImpl::OnReceived(const RpcServerStreamWPtr& stream, const RpcRequestPtr& request)/*{{{*/
+void ServerImpl::OnReceived(const ServerStreamWPtr& stream, const RequestPtr& request)
 {
     if (!_is_running)
     {
-        SLOG(ERROR, "OnReceived(): %s: server not in running, ignore",
-                RpcEndpointToString(request->RemoteEndpoint()).c_str());
+        //SLOG(ERROR, "OnReceived(): %s: server not in running, ignore",
+        //        EndpointToString(request->RemoteEndpoint()).c_str());
         return;
     }
 
     request->ProcessRequest(stream, _service_pool);
-}/*}}}*/
+}
 
-void RpcServerImpl::OnClosed(const RpcServerStreamPtr& stream)/*{{{*/
+void ServerImpl::OnClosed(const ServerStreamPtr& stream)
 {
     if (!_is_running)
         return;
 
     ScopedLocker<FastLock> _(_stream_set_lock);
     _stream_set.erase(stream);
-}/*}}}*/
+}
 
-void RpcServerImpl::StopStreams()/*{{{*/
+void ServerImpl::StopStreams()
 {
     ScopedLocker<FastLock> _(_stream_set_lock);
     for (StreamSet::iterator it = _stream_set.begin();
@@ -385,20 +386,19 @@ void RpcServerImpl::StopStreams()/*{{{*/
     {
         (*it)->close("server stopped");
     }
-}/*}}}*/
+}
 
-void RpcServerImpl::ClearStreams()/*{{{*/
+void ServerImpl::ClearStreams()
 {
     ScopedLocker<FastLock> _(_stream_set_lock);
     _stream_set.clear();
-}/*}}}*/
+}
 
-// rountine for TimerWorker---sdh
-void RpcServerImpl::TimerMaintain(const PTime& now)/*{{{*/
+void ServerImpl::TimerMaintain(const PTime& now)
 {
     SOFA_PBRPC_FUNCTION_TRACE;
 
-    int64 now_ticks = (now - _start_time).ticks();
+    int64_t now_ticks = (now - _start_time).ticks();
 
     // check listener, if closed, then try to restart it every interval.
     if (_listener->is_closed()
@@ -422,7 +422,7 @@ void RpcServerImpl::TimerMaintain(const PTime& now)/*{{{*/
         {
             for (StreamSet::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                const RpcServerStreamPtr& stream = *it;
+                const ServerStreamPtr& stream = *it;
                 if (stream->is_closed())
                 {
                     continue;
@@ -445,14 +445,14 @@ void RpcServerImpl::TimerMaintain(const PTime& now)/*{{{*/
         if (_slice_quota_in != -1)
         {
             // recharge quota pool
-            _flow_controller->recharge_read_quota(_slice_quota_in);
+            //_flow_controller->recharge_read_quota(_slice_quota_in);
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
             trigger_list.reserve(streams.size());
             for (StreamSet::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                const RpcServerStreamPtr& stream = *it;
+                const ServerStreamPtr& stream = *it;
                 if (stream->is_closed())
                 {
                     continue;
@@ -481,14 +481,14 @@ void RpcServerImpl::TimerMaintain(const PTime& now)/*{{{*/
         if (_slice_quota_out != -1)
         {
             // recharge quota pool
-            _flow_controller->recharge_write_quota(_slice_quota_out);
+            //_flow_controller->recharge_write_quota(_slice_quota_out);
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
             trigger_list.reserve(streams.size());
             for (StreamSet::iterator it = streams.begin(); it != streams.end(); ++it)
             {
-                const RpcServerStreamPtr& stream = *it;
+                const ServerStreamPtr& stream = *it;
                 if (stream->is_closed())
                 {
                     continue;
@@ -520,32 +520,34 @@ void RpcServerImpl::TimerMaintain(const PTime& now)/*{{{*/
     }
 
     _last_maintain_ticks = now_ticks;
-}/*}}}*/
+}
 
-WebServicePtr RpcServerImpl::GetWebService()/*{{{*/
+/*
+WebServicePtr ServerImpl::GetWebService()
 {
     return _web_service;
-}/*}}}*/
+}
 
-bool RpcServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)/*{{{*/
+bool ServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
 {
     if (!_web_service) 
     {
         return false;
     }
     return _web_service->RegisterServlet(path, servlet, take_ownership);
-}/*}}}*/
+}
 
-Servlet RpcServerImpl::UnregisterWebServlet(const std::string& path)/*{{{*/
+Servlet ServerImpl::UnregisterWebServlet(const std::string& path)
 {
     if (!_web_service)
     {
         return NULL;
     }
     return _web_service->UnregisterServlet(path);
-}/*}}}*/
+}
+*/
 
-} // namespace pbrpc
-} // namespace sofa
+} 
+}
 
 /* vim: set ts=4 sw=4 sts=4 tw=100 */

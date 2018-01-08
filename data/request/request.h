@@ -4,14 +4,6 @@
 #include <memory>
 #include <string>
 
-/*
-#include <sofa/pbrpc/common_internal.h>
-#include <sofa/pbrpc/rpc_endpoint.h>
-#include <sofa/pbrpc/rpc_controller_impl.h>
-#include <sofa/pbrpc/service_pool.h>
-#include <sofa/pbrpc/buffer.h>
-*/
-
 #include <google/protobuf/message.h>
 
 #include "../../common/smart_ptr/networking_ptr.h"
@@ -20,6 +12,7 @@
 #include "../../stream/endpoint.h"
 #include "../../controller/controller_impl.h"
 #include "../../controller/controller.h"
+#include "../../service_pool/service_pool.h"
 
 namespace hdcs {
 namespace networking {
@@ -27,21 +20,13 @@ namespace networking {
 class Request;
 typedef hdcs::networking::shared_ptr<Request> RequestPtr;
 
-// TODO delete
-class ServerStream;
-typedef hdcs::networking::shared_ptr<ServerStream> ServerStreamWPtr;
-
-// TODO delete
-class ClientStream;
-typedef hdcs::networking::shared_ptr<ClientStream> ClientStreamWPtr;
-
 class Request : public hdcs::networking::enable_shared_from_this<Request>
 {
 public:
     enum RequestType
     {
         BINARY,
-        HTTP //disable TODO
+        HTTP
     };
 
 public:
@@ -49,7 +34,7 @@ public:
     virtual ~Request() {}
 
     // The request type: BINARY or HTTP.
-    virtual RequestType RequestType() = 0;
+    //virtual RequestType RequestType() = 0;
 
     // The method full name to request.
     virtual std::string Method() = 0;
@@ -58,9 +43,9 @@ public:
     virtual uint64_t SequenceId() = 0;
 
     // Process the request.
-    // TODO delete the second parameter
     virtual void ProcessRequest(
-            const ServerStreamWPtr& server_stream) = 0;
+            const ServerStreamWPtr& server_stream,
+            const ServicePoolPtr& service_pool) = 0;
 
     // Assemble succeed response to buffer.
     virtual ReadBufferPtr AssembleSucceedResponse(
@@ -76,13 +61,13 @@ public:
 
 public:
     void CallMethod(
-            //MethodBoard* method_board, // TODO 
+            MethodBoard* method_board,
             Controller* controller,
             google::protobuf::Message* request,
             google::protobuf::Message* response);
 
     void OnCallMethodDone(
-            //MethodBoard* method_board, // TODO
+            MethodBoard* method_board,
             Controller* controller,
             google::protobuf::Message* request,
             google::protobuf::Message* response);
@@ -112,12 +97,11 @@ public:
 
     // Find method board from service pool.
     // @return NULL if not found.
-    /*
     static MethodBoard* FindMethodBoard(
-            //const ServicePoolPtr& service_pool, // TODO
+            const ServicePoolPtr& service_pool,
             const std::string& service_name,
             const std::string& method_name);
-    */
+
     void SetLocalEndpoint(const Endpoint& local_endpoint)
     {
         _local_endpoint = local_endpoint;
@@ -152,9 +136,47 @@ protected:
     Endpoint _local_endpoint;
     Endpoint _remote_endpoint;
     PTime _received_time;
-}; // class Request
+};
+/*
+class BinaryRequest : public Request
+{
+public:
+    BinaryRequest();
+    virtual ~BinaryRequest();
 
-} //
-} // 
+    // why ???!!!!dehao
+    //virtual RequestType RequestType();
+    //virtual RequestType RequestType();
+    RequestType xxx;
+
+    virtual std::string Method();
+
+    virtual uint64_t SequenceId();
+
+    virtual void ProcessRequest(
+            const ServerStreamWPtr& server_stream,
+            const ServicePoolPtr& service_pool);
+
+    virtual ReadBufferPtr AssembleSucceedResponse(
+            const ControllerImplPtr& cntl,
+            const google::protobuf::Message* response,
+            std::string& err);
+
+    virtual ReadBufferPtr AssembleFailedResponse(
+            int32_t error_code,
+            const std::string& reason,
+            std::string& err);
+
+private:
+    friend class BinaryRequestParser;
+
+ //   MessageHeader _req_header;
+ //   Meta          _req_meta;
+ //   ReadBufferPtr    _req_body;
+};
+*/
+
+} 
+}  
 
 #endif

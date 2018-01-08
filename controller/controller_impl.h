@@ -14,9 +14,12 @@
 #include "../common/wait_event.h"
 #include "../common/smart_ptr/networking_ptr.h"
 #include "../buffer/buffer.h"
+#include "../common/common_internal.h"
 
 //#include <google/protobuf/descriptor.h>
 
+// TODO 
+// ClientStreamWPtr --> ClientStreamWPtr
 
 namespace hdcs {
 namespace networking {
@@ -294,7 +297,7 @@ public:
     {
         return _wait_event;
     }
-/*   // TODO
+
     void SetClientStream(const ClientStreamWPtr& stream)
     {
         _client_stream = stream;
@@ -304,7 +307,7 @@ public:
     {
         return _client_stream;
     }
-*/
+
     void StartTimer()
     {
         int64_t timeout = Timeout();
@@ -359,7 +362,7 @@ public:
     // -----------------------------------------------------------------
     // Used only in server.
     // -----------------------------------------------------------------
-    /* TODO
+    //
     void SetServerStream(const ServerStreamWPtr& stream)
     {
         _server_stream = stream;
@@ -369,7 +372,7 @@ public:
     {
         return _server_stream;
     }
-    */
+
     void SetServerTimeout(int64_t timeout)
     {
         _server_timeout = timeout;
@@ -472,7 +475,7 @@ private:
     std::deque<InternalDoneCallback> _done_callbacks; // internal done callbacks
     bool _is_sync;
     WaitEventPtr _wait_event; // used only for sync call
-    //ClientStreamWPtr _client_stream;
+    ClientStreamWPtr _client_stream;
     PTime _expiration;
     uint64_t _timeout_id;
     ReadBufferPtr _request_buffer;
@@ -493,7 +496,7 @@ private:
     RequestOptions _auto_options; // options from proto
 
     // used only in server side
-    //ServerStreamWPtr _server_stream;
+    ServerStreamWPtr _server_stream;
     int64_t _server_timeout;
     PTime _request_received_time;
     PTime _start_process_time;

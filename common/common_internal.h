@@ -9,48 +9,41 @@
 #include <boost/function.hpp>
 #include <memory>
 
-//#include <hdcs/networking/common.h>
-#include "atomic.h"
-#include "counter.h"
-#include "../controller/controller_impl.h"
-//#include <hdcs/networking/func_tracer.h>
-//#include <hdcs/networking/io_service.h>
-//#include <hdcs/networking/locks.h>
-//#include <hdcs/networking/ptime.h>
+#include "./smart_ptr/networking_ptr.h"
 
 namespace hdcs {
 namespace networking {
 
 class ControllerImpl;
-typedef std::shared_ptr<ControllerImpl> RpcControllerImplPtr;
-typedef hdcs::networking::weak_ptr<RpcControllerImpl> RpcControllerImplWPtr;
-/*
-class RpcChannelImpl;
-typedef hdcs::networking::shared_ptr<RpcChannelImpl> RpcChannelImplPtr;
+typedef hdcs::networking::shared_ptr<ControllerImpl> ControllerImplPtr;
+typedef hdcs::networking::weak_ptr<ControllerImpl> ControllerImplWPtr;
 
-class RpcClientImpl;
-typedef hdcs::networking::shared_ptr<RpcClientImpl> RpcClientImplPtr;
+class ChannelImpl;
+typedef hdcs::networking::shared_ptr<ChannelImpl> ChannelImplPtr;
 
-class RpcServerImpl;
-typedef hdcs::networking::shared_ptr<RpcServerImpl> RpcServerImplPtr;
-typedef hdcs::networking::weak_ptr<RpcServerImpl> RpcServerImplWPtr;
+class ClientImpl;
+typedef hdcs::networking::shared_ptr<ClientImpl> ClientImplPtr;
 
-class RpcClientStream;
-typedef hdcs::networking::shared_ptr<RpcClientStream> RpcClientStreamPtr;
-typedef hdcs::networking::weak_ptr<RpcClientStream> RpcClientStreamWPtr;
+class ServerImpl;
+typedef hdcs::networking::shared_ptr<ServerImpl> ServerImplPtr;
+typedef hdcs::networking::weak_ptr<ServerImpl> ServerImplWPtr;
 
-class RpcServerStream;
-typedef hdcs::networking::shared_ptr<RpcServerStream> RpcServerStreamPtr;
-typedef hdcs::networking::weak_ptr<RpcServerStream> RpcServerStreamWPtr;
+class ClientStream;
+typedef hdcs::networking::shared_ptr<ClientStream> ClientStreamPtr;
+typedef hdcs::networking::weak_ptr<ClientStream> ClientStreamWPtr;
 
-class RpcListener;
-typedef hdcs::networking::shared_ptr<RpcListener> RpcListenerPtr;
+class ServerStream;
+typedef hdcs::networking::shared_ptr<ServerStream> ServerStreamPtr;
+typedef hdcs::networking::weak_ptr<ServerStream> ServerStreamWPtr;
+
+class Listener;
+typedef hdcs::networking::shared_ptr<Listener> ListenerPtr;
 
 class TimerWorker;
 typedef hdcs::networking::shared_ptr<TimerWorker> TimerWorkerPtr;
 
-class RpcTimeoutManager;
-typedef hdcs::networking::shared_ptr<RpcTimeoutManager> RpcTimeoutManagerPtr;
+class TimeoutManager;
+typedef hdcs::networking::shared_ptr<TimeoutManager> TimeoutManagerPtr;
 
 class ThreadGroup;
 typedef hdcs::networking::shared_ptr<ThreadGroup> ThreadGroupPtr;
@@ -70,6 +63,8 @@ typedef hdcs::networking::shared_ptr<IOServicePool> IOServicePoolPtr;
 
 class WebService;
 typedef hdcs::networking::shared_ptr<WebService> WebServicePtr;
+
+/*
 #define SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(name_) \
     extern hdcs::networking::AtomicCounter g_hdcs_counter_##name_
 #define SOFA_PBRPC_DEFINE_RESOURCE_COUNTER(name_) \
@@ -81,8 +76,8 @@ typedef hdcs::networking::shared_ptr<WebService> WebServicePtr;
 #define SOFA_PBRPC_GET_RESOURCE_COUNTER(name_) \
     static_cast<int>(g_hdcs_counter_##name_)
 
-//SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(RpcByteStream);
-//SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(RpcListener);
+//SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(ByteStream);
+//SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(Listener);
 
 // Use for affecting global/static variables' construct/destruct order.
 inline void touch_boost_error_category()

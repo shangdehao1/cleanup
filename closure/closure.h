@@ -64,14 +64,15 @@
 //    
 /////////////////////////////////////////////////////
 
+#include <google/protobuf/stubs/common.h>
 #include "closure_helper.h"
 
 namespace hdcs {
 namespace networking{
 
 /// base class for all Closures
-///class ClosureBase : public google::protobuf::Closure // disable google dependences
-class ClosureBase
+class ClosureBase : public google::protobuf::Closure // disable google dependences
+///class ClosureBase
 {
 public:
     virtual ~ClosureBase() {}

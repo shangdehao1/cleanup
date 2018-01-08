@@ -1,5 +1,5 @@
-#ifndef _SOFA_PBRPC_RPC_SERVER_H_
-#define _SOFA_PBRPC_RPC_SERVER_H_
+#ifndef SERVER_H_
+#define SERVER_H_
 
 #include <google/protobuf/service.h>
 
@@ -8,16 +8,16 @@
 #include <sofa/pbrpc/rpc_error_code.h>
 #include <sofa/pbrpc/profiling_linker.h>
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 // Defined in other files.
-class RpcServerImpl;
-struct HTTPRequest;
-struct HTTPResponse;
+class ServerImpl;
+//struct HTTPRequest;
+//struct HTTPResponse;
 
 // this class as parameter will be passed into rpc_server_impl
-struct RpcServerOptions {
+struct ServerOptions {
     int work_thread_num; // thread count for network handing and service processing, default 8.
 
     int max_connection_count;    // max connection count to accept.
@@ -58,7 +58,7 @@ struct RpcServerOptions {
 
     size_t io_service_pool_size;
 
-    RpcServerOptions()
+    ServerOptions()
         : work_thread_num(8)
         , max_connection_count(-1)
         , keep_alive_time(-1)
@@ -73,11 +73,12 @@ struct RpcServerOptions {
     {}
 };
 
-typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
-class RpcServer
+//typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
+
+class Server
 {
 public:
-    // it will be taken over by rpc server.
+    // it will be taken over by server.
     class EventHandler {
     public:
         virtual ~EventHandler() {}
@@ -87,20 +88,20 @@ public:
         // restarted to recover to usable state.
         //
         // The "error_code" may be:
-        //     RPC_ERROR_TOO_MANY_OPEN_FILES
-        //     RPC_ERROR_UNKNOWN
-        virtual void NotifyAcceptFailed(RpcErrorCode error_code, const std::string& error_text) = 0;
+        //     HDCS_NETWORK_ERROR_TOO_MANY_OPEN_FILES
+        //     HDCS_NETWORK_ERROR_UNKNOWN
+        virtual void NotifyAcceptFailed(ErrorCode error_code, const std::string& error_text) = 0;
     };
 
 public:
     // Constructor.
-    // @param options The rpc server options.
-    // @param handler The event handler.  It will be taken overby the rpc server and will be
+    // @param options The server options.
+    // @param handler The event handler.  It will be taken overby the server and will be
     //                deleted when the server destroys.
-    explicit RpcServer(const RpcServerOptions& options = RpcServerOptions(),
+    explicit Server(const ServerOptions& options = ServerOptions(),
                        EventHandler* handler = NULL, 
                        const ProfilingLinker& linker = ProfilingLinker());
-    virtual ~RpcServer();
+    virtual ~Server();
 
     // Start the server, and listen on the "server_address".  If succeed started
     // and listened, return true.
@@ -115,7 +116,7 @@ public:
     //     int main()
     //     {
     //         ... ...
-    //         ::sofa::pbrpc::RpcServer rpc_server;
+    //         ::sofa::pbrpc::Server rpc_server;
     //         if (!rpc_server.RegisterService(service)) {
     //             fprintf(stderr, "Register service failed.\n");
     //             return EXIT_FAILURE;
@@ -131,7 +132,7 @@ public:
     int Run();
 
     // Get the current rpc server options.
-    RpcServerOptions GetOptions();
+    ServerOptions GetOptions();
 
     // Reset the rpc server options.
     //
@@ -143,12 +144,12 @@ public:
     //
     // Though you want to reset only part of these options, the other options also
     // need to be set.  Maybe you can reset by this way:
-    //     RpcServerOptions options = rpc_server->GetOptions();
+    //     ServerOptions options = rpc_server->GetOptions();
     //     options.max_throughput_in = new_max_throughput_in; // reset some options
     //     rpc_server->ResetOptions(options);
     //
     // The old and new value of reset options will be print to INFO log.
-    void ResetOptions(const RpcServerOptions& options);
+    void ResetOptions(const ServerOptions& options);
 
     // Register a service.  If a service has been registered successfully, and the
     // "take_ownership" is true, the service will be taken overby the rpc server
@@ -159,7 +160,7 @@ public:
     //
     // Preconditions:
     // * "service" != NULL
-    bool RegisterService(google::protobuf::Service* service, bool take_ownership = true);
+    //bool RegisterService(google::protobuf::Service* service, bool take_ownership = true);
 
     // Get the count of current registed services.
     int ServiceCount();
@@ -170,32 +171,21 @@ public:
     // Return true if the server is listening on some address.
     bool IsListening();
 
-    // Register a path and its dealing function
-    // Return true if operation success
-    // Return false if path already exist
-    // Example: see sofa-pbrpc/sample/echo
-    // NOTE: path will be formatted
-    bool RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership = true);
+    //bool RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership = true);
 
-    // Delete a path and its related function from rpc server
-    // Return Servlet if deleting success
-    // Return NULL if path not exist
-    // NOTE: path will be formatted
-    Servlet UnregisterWebServlet(const std::string& path);
+    //Servlet UnregisterWebServlet(const std::string& path);
 
 public:
-    const sofa::pbrpc::shared_ptr<RpcServerImpl>& impl() const
+    const hdcs::networking::shared_ptr<ServerImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    sofa::pbrpc::shared_ptr<RpcServerImpl> _impl;
+    hdcs::networking::shared_ptr<ServerImpl> _impl;
+};
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcServer);
-}; // class RpcServer
+}  
+}  
 
-} // namespace pbrpc
-} // namespace sofa
-
-#endif // _SOFA_PBRPC_RPC_SERVER_H_
+#endif 

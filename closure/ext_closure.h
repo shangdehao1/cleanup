@@ -100,7 +100,6 @@
 /////////////////////////////////////////////////////
 
 #include "closure_helper.h"
-#include <google/protobuf/stubs/common.h>
 
 namespace hdcs {
 namespace networking{
