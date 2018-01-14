@@ -16,6 +16,7 @@ namespace networking {
 
 class ReadBuffer;
 typedef hdcs::networking::shared_ptr<ReadBuffer> ReadBufferPtr;
+
 class WriteBuffer;
 typedef hdcs::networking::shared_ptr<WriteBuffer> WriteBufferPtr;
 
@@ -23,8 +24,8 @@ typedef std::deque<BufHandle> BufHandleList;
 typedef std::deque<BufHandle>::iterator BufHandleListIterator;
 typedef std::deque<BufHandle>::reverse_iterator BufHandleListReverseIterator;
 
-//class ReadBuffer : public google::protobuf::io::ZeroCopyInputStream
-class ReadBuffer
+class ReadBuffer : public google::protobuf::io::ZeroCopyInputStream
+//class ReadBuffer
 {
 public:
     ReadBuffer();
@@ -69,8 +70,8 @@ private:
 
 };
 
-//class WriteBuffer : public google::protobuf::io::ZeroCopyOutputStream
-class WriteBuffer
+class WriteBuffer : public google::protobuf::io::ZeroCopyOutputStream
+//class WriteBuffer
 {
 public:
     WriteBuffer();
@@ -108,14 +109,14 @@ public:
     // * "pos" + "size" <= ByteCount()
     void SetData(int64_t pos, const char* data, int size);
 
-    // implements ZeroCopyOutputStream when using zeroCopyOutputStream 
+    // 
     bool Next(void** data, int* size);
+
     void BackUp(int count);
+
     int64_t ByteCount() const;
 
-    // Append string to the buffer
-    // If succeed, return true
-    // If failed, return false
+    // Append data to the buffer
     bool Append(const std::string& data);
     bool Append(const char* data, int size);
 

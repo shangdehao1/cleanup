@@ -9,7 +9,7 @@ namespace networking {
 class TimerWorker : public hdcs::networking::enable_shared_from_this<TimerWorker>
 {
 public:
-    typedef boost::function<void(const PTime& /* now */)> WorkRoutine;
+    typedef boost::function<void(const PTime& )> WorkRoutine;
 
 public:
     TimerWorker(IOService& io_service)
@@ -98,4 +98,4 @@ private:
 } // namespace pbrpc
 } // namespace sofa
 
-#endif // _SOFA_PBRPC_TIMER_WORKER_H_
+#endif

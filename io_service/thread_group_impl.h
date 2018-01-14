@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef THREAD_GROUP_IMPL_H_
 #define THREAD_GROUP_IMPL_H_
 
@@ -11,11 +7,13 @@
 
 #include <boost/bind.hpp>
 
+
 #include "io_service.h"
 #include "../closure/ext_closure.h"
-#include "../common/common.h"
+#include "../closure/closure_helper.h"
+#include "../common/counter.h"
 
-//TODO disable google::protobuf 
+#include <google/protobuf/stubs/common.h>
 
 namespace hdcs {
 namespace networking {
@@ -97,7 +95,6 @@ public:
     {
         if (_is_running) return true;
         _is_running = true;
-
         //SLOG(INFO, "start(): starting thread group [%s], thread_num=%d", _name.c_str(), _thread_num);
         _io_service_work = new IOServiceWork(_io_service);
         _threads = new pthread_t[_thread_num];
@@ -166,7 +163,7 @@ public:
             int ret = pthread_join(_threads[i], NULL);
             if (ret != 0)
             {
-                //SLOG(ERROR, "stop(): join thread[%d] failed: error=%d", i, ret);
+            //    SLOG(ERROR, "stop(): join thread[%d] failed: error=%d", i, ret);
             }
         }
 
@@ -198,7 +195,7 @@ public:
         _io_service.post(handler);
     }
 
-    void dispatch(google::protobuf::Closure* handle)
+    void dispatch( google::protobuf::Closure* handle)
     {
         dispatch(boost::bind(&ThreadGroupImpl::closure_run_helper, handle));
     }
@@ -225,7 +222,7 @@ private:
         // init
         if (thread_param->init_func && !thread_param->init_func->Run())
         {
-            //SLOG(ERROR, "thread_run(): init thread [%d] failed", thread_param->id);
+        //    SLOG(ERROR, "thread_run(): init thread [%d] failed", thread_param->id);
             ++thread_param->init_fail;
         }
         ++thread_param->init_done;
@@ -264,10 +261,9 @@ private:
     pthread_t* _threads;
     ThreadParam* _thread_params;
 
-    //DISALLOW_EVIL_CONSTRUCTORS(ThreadGroupImpl);
 };
 
-} // 
-} //
+} 
+}
 
-#endif // 
+#endif 

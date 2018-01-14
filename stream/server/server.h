@@ -3,18 +3,17 @@
 
 #include <google/protobuf/service.h>
 
-#include <sofa/pbrpc/common.h>
-#include <sofa/pbrpc/ext_closure.h>
-#include <sofa/pbrpc/rpc_error_code.h>
-#include <sofa/pbrpc/profiling_linker.h>
+//#include <sofa/pbrpc/common.h>
+#include "../../closure/ext_closure.h"
+#include "../../common/error_code.h"
+#include "../../common/smart_ptr/networking_ptr.h"
+//#include <sofa/pbrpc/profiling_linker.h>
 
 namespace hdcs {
 namespace networking {
 
 // Defined in other files.
 class ServerImpl;
-//struct HTTPRequest;
-//struct HTTPResponse;
 
 // this class as parameter will be passed into rpc_server_impl
 struct ServerOptions {
@@ -73,8 +72,6 @@ struct ServerOptions {
     {}
 };
 
-//typedef ExtClosure<bool(const HTTPRequest&, HTTPResponse&)>* Servlet;
-
 class Server
 {
 public:
@@ -99,8 +96,7 @@ public:
     // @param handler The event handler.  It will be taken overby the server and will be
     //                deleted when the server destroys.
     explicit Server(const ServerOptions& options = ServerOptions(),
-                       EventHandler* handler = NULL, 
-                       const ProfilingLinker& linker = ProfilingLinker());
+                       EventHandler* handler = NULL);
     virtual ~Server();
 
     // Start the server, and listen on the "server_address".  If succeed started

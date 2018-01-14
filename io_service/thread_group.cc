@@ -1,3 +1,6 @@
+
+#include <google/protobuf/stubs/common.h>
+
 #include "thread_group.h"
 #include "thread_group_impl.h"
 

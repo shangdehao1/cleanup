@@ -9,6 +9,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include "../common/atomic.h"
+#include "../common/smart_ptr/networking_ptr.h"
 #include "endpoint.h"
 
 // If SOFA_PBRPC_TCP_NO_DELAY == true, means disable the Nagle algorithm.
@@ -33,7 +34,7 @@ namespace networking {
 using boost::asio::ip::tcp;
 using namespace boost::asio;
 
-class ByteStream : public std::enable_shared_from_this<ByteStream>
+class ByteStream : public hdcs::networking::enable_shared_from_this<ByteStream>
 {
 public:
     ByteStream(IOService& io_service, const Endpoint& endpoint)

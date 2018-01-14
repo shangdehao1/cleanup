@@ -1,6 +1,7 @@
 #include <iostream>
 //#include "common.h"
 #include "common_internal.h"
+#include "string_utils.h"
 
 using namespace hdcs::networking;
 

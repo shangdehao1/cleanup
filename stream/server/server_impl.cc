@@ -1,4 +1,25 @@
-#include <sofa/pbrpc/rpc_server_impl.h>
+
+
+
+
+#include "../../common/ptime.h"
+#include "../../common/smart_ptr/networking_ptr.h"
+#include "../../buffer/buffer.h"
+#include "server_stream.h"
+#include "../../io_service/io_service_pool.h"
+
+#include "../../controller/controller.h"
+
+#include "server.h"
+
+#include "server_impl.h"
+
+
+#include "listener.h"
+//#include "server.h" // TODO question?
+
+
+/*
 #include <sofa/pbrpc/rpc_controller_impl.h>
 #include <sofa/pbrpc/tran_buf_pool.h>
 #include <sofa/pbrpc/flow_controller.h>
@@ -8,6 +29,7 @@
 #include <sofa/pbrpc/compressed_stream.h>
 #include <sofa/pbrpc/io_service_pool.h>
 #include <sofa/pbrpc/web_service.h>
+*/
 
 namespace hdcs {
 namespace networking {
@@ -25,9 +47,6 @@ ServerImpl::ServerImpl(const ServerOptions& options,
     , _last_print_connection_ticks(0)
 {
     _service_pool.reset(new ServicePool(this));
-
-    //_web_service.reset(new WebService(_service_pool));
-    //_web_service->Init();
 
     _slice_count = std::max(1, 1000 / MAINTAIN_INTERVAL_IN_MS);
 
@@ -58,8 +77,7 @@ ServerImpl::ServerImpl(const ServerOptions& options,
 ServerImpl::~ServerImpl()
 {
     //FUNCTION_TRACE;
-    Stop();
-    //_web_service.reset();
+    //Stop(); //TODO
     _service_pool.reset();
     if (_event_handler) delete _event_handler;
 }
@@ -129,7 +147,7 @@ bool ServerImpl::Start(const std::string& server_address)
     //SLOG(INFO, "Start(): listen succeed: %s [%s]",
     //        _server_address.c_str(), EndpointToString(_listen_endpoint).c_str());
 
-    // timer
+    // timer TODO
     /*
     _timer_worker.reset(new TimerWorker(_maintain_thread_group->io_service()));
     _timer_worker->set_time_duration(time_duration_milliseconds(MAINTAIN_INTERVAL_IN_MS));
@@ -153,11 +171,11 @@ void ServerImpl::Stop()
     if (!_is_running) return;
     _is_running = false;
 
-    _timer_worker->stop();
+    //_timer_worker->stop();
     _listener->close();
     StopStreams();
 
-    _timer_worker.reset();
+    //_timer_worker.reset();
     _listener.reset();
     ClearStreams();
     _io_service_pool->Stop();
@@ -259,7 +277,7 @@ int ServerImpl::ConnectionCount()
 
 // get request information from all stream queue...sdh
 void ServerImpl::GetPendingStat(int64_t* pending_message_count,
-        int64_t* pending_buffer_size, int64* pending_data_size)
+        int64_t* pending_buffer_size, int64_t* pending_data_size)
 {
     ScopedLocker<FastLock> _(_stream_set_lock);
     int64_t message_count = 0;
@@ -396,8 +414,7 @@ void ServerImpl::ClearStreams()
 
 void ServerImpl::TimerMaintain(const PTime& now)
 {
-    SOFA_PBRPC_FUNCTION_TRACE;
-
+    //SOFA_PBRPC_FUNCTION_TRACE;
     int64_t now_ticks = (now - _start_time).ticks();
 
     // check listener, if closed, then try to restart it every interval.
@@ -440,6 +457,7 @@ void ServerImpl::TimerMaintain(const PTime& now)
                 }
             }
         }
+        /*
 
         // flow control in
         if (_slice_quota_in != -1)
@@ -511,6 +529,7 @@ void ServerImpl::TimerMaintain(const PTime& now)
                 t_it->stream->trigger_send();  // the interface of byte_stream,
             }
         }
+        */
     }
 
     if (now_ticks - _last_switch_stat_slot_ticks >= _switch_stat_slot_interval_ticks)
@@ -522,32 +541,5 @@ void ServerImpl::TimerMaintain(const PTime& now)
     _last_maintain_ticks = now_ticks;
 }
 
-/*
-WebServicePtr ServerImpl::GetWebService()
-{
-    return _web_service;
-}
-
-bool ServerImpl::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
-{
-    if (!_web_service) 
-    {
-        return false;
-    }
-    return _web_service->RegisterServlet(path, servlet, take_ownership);
-}
-
-Servlet ServerImpl::UnregisterWebServlet(const std::string& path)
-{
-    if (!_web_service)
-    {
-        return NULL;
-    }
-    return _web_service->UnregisterServlet(path);
-}
-*/
-
 } 
 }
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */

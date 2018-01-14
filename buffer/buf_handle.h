@@ -5,7 +5,6 @@ namespace hdcs {
 namespace networking {
 
 struct BufHandle{
-    // using tran_buf_pool to malloc space...sdh 
     char* data; // block header.
     int   size; // data size
     union {

@@ -8,8 +8,11 @@
 #include "../../common/lock/locks.h"
 #include "../byte_stream.h"
 #include "../../data/message/message_header.h"
+#include "../../data/request/request_parser.h"
+#include "../../data/request/request.h"
 #include "../../buffer/buffer.h"
 #include "../../buffer/tran_buf_pool.h"
+#include "../../common/string_utils.h"
 
 //#include <flow_controller.h> 
 
@@ -103,13 +106,14 @@ public:
         put_into_pending_queue(message, cookie);
         try_start_send();
     }
-/*
+
+    // TODO
     // Set the flow controller.
-    void set_flow_controller(const FlowControllerPtr& flow_controller)
-    {
-        _flow_controller = flow_controller;
-    }
-*/
+    //void set_flow_controller(const FlowControllerPtr& flow_controller)
+    //{
+    //    _flow_controller = flow_controller;
+    //}
+
     // Set the max size of pending buffer for send.
     void set_max_pending_buffer_size(int64_t max_pending_buffer_size)
     {
@@ -430,6 +434,7 @@ private:
     //
     // If failed, the receiving is ignored.
     // If succeed, the token must be acquired.
+    //
     bool try_start_receive()
     {
         //FUNCTION_TRACE;
@@ -599,7 +604,7 @@ private:
                 }
                 data += consumed;
                 size -= consumed;
-                //if (!choose_rpc_request_parser()) //TODO
+                //if (!choose_request_parser()) //TODO
                 if (false)
                 {
                     // no parser identify the magic string
@@ -611,7 +616,7 @@ private:
                     return true;
                 }
             }
-            int ret = _current_rpc_request_parser->Parse(
+            int ret = _current_request_parser->Parse(
                     _tran_buf, size, data - _tran_buf, &consumed);
             _cur_recved_bytes += consumed;
             if (ret == 0)
@@ -624,7 +629,7 @@ private:
             }
             data += consumed;
             size -= consumed;
-            RequestPtr request = _current_rpc_request_parser->GetRequest();
+            RequestPtr request = _current_request_parser->GetRequest();
             request->SetLocalEndpoint(_local_endpoint);
             request->SetRemoteEndpoint(_remote_endpoint);
             request->SetReceivedTime(ptime_now());
@@ -637,7 +642,6 @@ private:
     // Choose the proper request parser.
     //
     // @return false if no parser matched.
-    /*
     bool choose_request_parser()
     {
         // usually, one channal always use the same parser,
@@ -660,14 +664,11 @@ private:
         }
         // no parser match, print error
         std::string magic_str = StringUtils::c_escape_string(_magic_string, sizeof(_magic_string));
-        SLOG(ERROR, "choose_request_parser(): %s: un-identified magic string: %s",
-                EndpointToString(_remote_endpoint).c_str(), magic_str.c_str());
+        //SLOG(ERROR, "choose_request_parser(): %s: un-identified magic string: %s",
+        //        EndpointToString(_remote_endpoint).c_str(), magic_str.c_str());
         _current_request_parser.reset();
         return false;
     }
-    */
-
-    bool choose_request_parser(){} // TODO delete ..
 
     // Clear temp variables for sending message.
     void clear_sending_env()
@@ -701,11 +702,11 @@ private:
         }
 
         _tran_buf = reinterpret_cast<char*>(
-                TranBufPool::malloc(HDCS_NETWORK_TRAN_BUF_BLOCK_MAX_FACTOR));
+                TranBufPool::malloc(TRAN_BUF_BLOCK_MAX_FACTOR));
         if(_tran_buf == NULL)
         {
-            SLOG(ERROR, "reset_tran_buf(): %s: malloc buffer failed: out of memory",
-                    EndpointToString(_remote_endpoint).c_str());
+            //SLOG(ERROR, "reset_tran_buf(): %s: malloc buffer failed: out of memory",
+            //        EndpointToString(_remote_endpoint).c_str());
             return false;
         }
         _receiving_data = reinterpret_cast<char*>(_tran_buf);
@@ -760,9 +761,8 @@ private:
     int _magic_string_recved_bytes;
     int _cur_recved_bytes;
 
-    // TODO
-    ///std::vector<RequestParserPtr> _request_parsers;
-    //RequestParserPtr _current_request_parser;
+    std::vector<RequestParserPtr> _request_parsers;
+    RequestParserPtr _current_request_parser;
 
     // tran buf for reading data
     char* _tran_buf; // strong ptr

@@ -24,12 +24,6 @@ namespace networking {
 class TranBufPool
 {
 public:
-    // Allocate a block.  Return NULL if failed.
-    //
-    //   block_size = SOFA_PBRPC_TRAN_BUF_BLOCK_BASE_SIZE << factor
-    //
-    // Postconditions:
-    // * If succeed, the reference count of the block is equal to 1.
     inline static void * malloc(int factor = 0)
     {
         void * p = ::malloc(TRAN_BUF_BLOCK_BASE_SIZE << factor);
@@ -42,39 +36,27 @@ public:
         return p;
     }
 
-    // Return block size pointed by "p", including the hidden header.
-    //
-    // Preconditions:
-    // * The block pointed by "p" was allocated by this pool and is in use currently.
+    // block_size = hidden_header + content_size
     inline static int block_size(void * p)
     {
         return *(reinterpret_cast<int*>(p) - 2);
     }
 
-    // Return capacity size pointed by "p", not including the hidden header.
-    //
-    //   capacity = block_size - sizeof(int) * 2
-    //
-    // Preconditions:
-    // * The block pointed by "p" was allocated by this pool and is in use currently.
+    // return content_size
     inline static int capacity(void * p)
     {
         return *(reinterpret_cast<int*>(p) - 2) - sizeof(int) * 2;
     }
 
     // Increase the reference count of the block.
-    //
-    // Preconditions:
-    // * The block pointed by "p" was allocated by this pool and is in use currently.
     inline static void add_ref(void * p)
     {
-        atomic_inc(reinterpret_cast<int*>(p) - 1); // remove namespace...sdh
+        atomic_inc(reinterpret_cast<int*>(p) - 1);
     }
 
-    // Decrease the reference count of the block.  If the reference count equals
+    // Decrease the reference count of the block.  
+    // If the reference count equals
     // to 0 afterward, then put the block back to the free list
-    //
-    // Preconditions:
     // * The block pointed by "p" was allocated by this pool and is in use currently.
     inline static void free(void * p)
     {

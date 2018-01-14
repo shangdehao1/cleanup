@@ -1,8 +1,11 @@
 #ifndef LISTENER_H_
 #define LISTENER_H_
 
-#include "../common/smart_ptr/networking_ptr.h"
-#include "../common/error_code.h"
+#include "../../common/smart_ptr/networking_ptr.h"
+#include "../../common/error_code.h"
+#include "../endpoint.h"
+#include "../../io_service/io_service.h"
+#include "../../io_service/io_service_pool.h"
 
 namespace hdcs {
 namespace networking {
@@ -23,8 +26,8 @@ public:
     Listener(IOServicePoolPtr& io_service_pool, const Endpoint& endpoint)
         : _io_service_pool(io_service_pool)
         , _endpoint(endpoint)
-        , _endpoint_str(EndpointToString(endpoint))
-        , _acceptor(io_service_pool->GetIOService()) // the only one acceptor
+        , _endpoint_str(EndPointToString(endpoint))
+        , _acceptor(io_service_pool->GetIOService())
         , _is_closed(true)
     {
         //INC_RESOURCE_COUNTER(Listener);

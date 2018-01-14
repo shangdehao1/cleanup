@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef MESSAGE_STREAM_H_
 #define MESSAGE_STREAM_H_
 
@@ -75,99 +71,61 @@ public:
         }
     }
 
-    // Async send message to the remote endpoint. The message may be first
-    // put into a pending queue if the channel is busy at that time.
-    // 
-    // callback 1
-    // Before starting sending data, the hook function "on_sending" will
-    // be called to check if the message still need to be sent.
-    //
-    //callback 2
-    // If send succeed, callback "on_sent" will be called;
-    //
-    //callback 3
-    // If send faily, callback "on_send_failed" will be called. 
-    //
-    // @param message  the message to send, including header, meta and data.
-    // @param cookie  a cookie affiliated to the message, which can carry some
-    //                user's customized info. It will not be sent, but would
-    //                be passed to the callback function.
     void async_send_message(
             const ReadBufferPtr& message,
             const SendCookie& cookie)
     {
-        //FUNCTION_TRACE;
         if (is_closed())
         {
             on_send_failed(HDCS_NETWORK_ERROR_CONNECTION_CLOSED, message, cookie);
             return;
         }
-        put_into_pending_queue(message, cookie);
+        put_into_pending_queue(message, cookie); // put meesage into pending queue
         try_start_send();
     }
-/*
-    //  set flow controller
-    void set_flow_controller(const FlowControllerPtr& flow_controller)
-    {
-        _flow_controller = flow_controller;
-    }
-*/
-    // Set the max size of pending buffer for send.
+
     void set_max_pending_buffer_size(int64_t max_pending_buffer_size)
     {
         _max_pending_buffer_size = max_pending_buffer_size;
     }
 
-    // Get the max size of pending buffer for send.
     int64_t max_pending_buffer_size() const
     {
         return _max_pending_buffer_size;
     }
 
-    // Get the current count of messages in the pending queue.
     int64_t pending_message_count() const
     {
         return _pending_message_count + _swapped_message_count;
     }
 
-    // Get the current data size of messages in the pending queue.
     int64_t pending_data_size() const
     {
         return _pending_data_size + _swapped_data_size;
     }
 
-    // Get the current buffer size occupied by the pending queue.
-    // This size may be larger than "pending_data_size".
     int64_t pending_buffer_size() const
     {
         return _pending_buffer_size + _swapped_buffer_size;
     }
 
-    // Trigger receiving operator.
-    // @return true if suceessfully triggered
     virtual bool trigger_receive()
     {
         _read_quota_token = 1;
         return try_start_receive();
     }
 
-    // Trigger sending operator.
-    // @return true if suceessfully triggered
     virtual bool trigger_send()
     {
         _write_quota_token = 1;
         return try_start_send();
     }
 
-    // Get read quota token used for sorting the trigger order.
-    // Always no more than 0.
     int read_quota_token() const
     {
         return _read_quota_token;
     }
 
-    // Get write quota token used for sorting the trigger order.
-    // Always no more than 0.
     int write_quota_token() const
     {
         return _write_quota_token;
@@ -175,32 +133,19 @@ public:
 
 protected:
 
-    // Hook function on the point of starting the sending.
-    //
-    // If return true, go ahead with the sending;
-    // else, cancel the sending.
-    //
-    // This hook may be useful when the message stayed in a sending waiting
-    // queue for some time, but when dequed, it is already timeout.
     virtual bool on_sending(
             const ReadBufferPtr& message,
             const SendCookie& cookie) = 0;
 
-    // Hook function when send message succeed.
     virtual void on_sent(
             const ReadBufferPtr& message,
             const SendCookie& cookie) = 0;
 
-    // Hook function when send message failed.
     virtual void on_send_failed(
             ErrorCode error_code,
             const ReadBufferPtr& message,
             const SendCookie& cookie) = 0;
 
-    // Hook function when received message.
-    // @param message  the rough received message, including meta and data.
-    // @param meta_size  the size of meta.
-    // @param data_size  the size of data.
     virtual void on_received(
             const ReadBufferPtr& message,
             int meta_size,
@@ -221,13 +166,10 @@ private:
         return true;
     }
 
-    // Callback of "async_read_some()".
-    // for on_read_some implement of byte_stream
     virtual void on_read_some(
             const boost::system::error_code& error,
             std::size_t bytes_transferred)
     {
-        //FUNCTION_TRACE;
         if (!is_connected()) return;
         if (error)
         {
@@ -282,7 +224,6 @@ private:
             const boost::system::error_code& error,
             std::size_t bytes_transferred)
     {
-        //FUNCTION_TRACE;
 
         if (!is_connected()) return;
 
@@ -348,14 +289,11 @@ private:
     }
 
     // Put an item into back of the pending queue.
-    //
     // @return false if the pending queue is full.
     void put_into_pending_queue(
             const ReadBufferPtr& message,
             const SendCookie& cookie)
     {
-        //FUNCTION_TRACE;
-
         ScopedLocker<FastLock> _(_pending_lock);
         _pending_calls.push_back(PendingItem(message, cookie));
         ++_pending_message_count;
@@ -364,14 +302,11 @@ private:
     }
 
     // Insert an item into front of the pending queue.
-    //
     // @return false if the pending queue is full.
     void insert_into_pending_queue(
             const ReadBufferPtr& message,
             const SendCookie& cookie)
     {
-        //FUNCTION_TRACE;
-
         _swapped_calls.push_front(PendingItem(message, cookie));
         ++_swapped_message_count;
         _swapped_data_size += message->TotalCount();
@@ -395,7 +330,6 @@ private:
             ReadBufferPtr* message,
             SendCookie* cookie)
     {
-        //FUNCTION_TRACE;
 
         if (_swapped_calls.empty() && _pending_message_count > 0)
         {
@@ -440,8 +374,6 @@ private:
     // If succeed, the token must be acquired.
     bool try_start_receive()
     {
-        //FUNCTION_TRACE;
-
         //check token
         if (_receive_token == TOKEN_LOCK)
         {
@@ -490,7 +422,6 @@ private:
     // If succeed, the token must be acquired.
     bool try_start_send()
     {
-        //FUNCTION_TRACE;
 
         if (_send_token == TOKEN_LOCK)
         {

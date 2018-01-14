@@ -1,7 +1,3 @@
-// Copyright (c) 2015 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef IO_SERVICE_POOL_H_
 #define IO_SERVICE_POOL_H_
 
@@ -42,7 +38,6 @@ private:
     ThreadInitFunc _init_func;
     ThreadDestFunc _dest_func;
 
-    //DISALLOW_EVIL_CONSTRUCTORS(IOServicePool);
 };
 
 } // 

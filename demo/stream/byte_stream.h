@@ -52,7 +52,6 @@ public:
     }
 
     void close(const std::string& reason){
-        // should run for only once
         if (atomic_swap(&_status, (int)STATUS_CLOSED) != STATUS_CLOSED)
         {
             snprintf(_error_message, sizeof(_error_message), "%s", reason.c_str());
@@ -209,17 +208,12 @@ public:
         return _connect_timeout;
     }
 
-    // Trigger receiving operator.
-    // @return true if suceessfully triggered
     virtual bool trigger_receive() = 0;
 
-    // Trigger sending operator.
-    // @return true if suceessfully triggered
     virtual bool trigger_send() = 0;
 
 protected:
 
-    // Async read some data from the stream.
     void async_read_some(char* data, size_t size)
     {
         _socket.async_read_some(boost::asio::buffer(data, size),
@@ -227,7 +221,6 @@ protected:
                     shared_from_this(), _1, _2));
     }
 
-    // Async write some data to the stream.
     void async_write_some(const char* data, size_t size)
     {
         _socket.async_write_some(boost::asio::buffer(data, size),
@@ -235,11 +228,8 @@ protected:
                     shared_from_this(), _1, _2));
     }
 
-    // Hook function when connected.
-    // @return false if some error occured.
     virtual bool on_connected() = 0;
 
-    // Callback of "async_read_some()".
     virtual void on_read_some(
             const boost::system::error_code& error,
             std::size_t bytes_transferred) = 0;
@@ -256,7 +246,6 @@ protected:
 
 private:
 
-    // Callback of "async_connect()".
     void on_connect(const boost::system::error_code& error)
     {
         //Maybe already timeout

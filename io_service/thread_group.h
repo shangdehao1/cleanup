@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef THREAD_GROUP_H_
 #define THREAD_GROUP_H_
 
@@ -59,10 +55,9 @@ public:
 private:
     hdcs::networking::shared_ptr<ThreadGroupImpl> _imp;
 
-    //DISALLOW_EVIL_CONSTRUCTORS(ThreadGroup);
 };
 
-} // namespace
-} // namespace
+} 
+} 
 
-#endif // 
+#endif 

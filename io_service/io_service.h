@@ -10,7 +10,7 @@
 #endif
 
 #include <boost/asio.hpp>
-#include "../common/common.h"
+#include "../common/smart_ptr/networking_ptr.h"
 
 namespace hdcs {
 namespace networking {
@@ -27,7 +27,7 @@ typedef hdcs::networking::shared_ptr<IOServiceStrand> IOServiceStrandPtr;
 typedef boost::asio::deadline_timer IOServiceTimer;
 typedef hdcs::networking::shared_ptr<IOServiceTimer> IOServiceTimerPtr;
 
-} // 
-} // 
+}  
+}  
 
-#endif // 
+#endif

@@ -1,15 +1,17 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <sofa/pbrpc/rpc_server.h>
-#include <sofa/pbrpc/rpc_server_impl.h>
+//#include "server.h"
+#include "server_impl.h"
+#include "server.h"
+
+#include "../../common/smart_ptr/networking_ptr.h"
 
 namespace hdcs {
 namespace networking {
 
 Server::Server(const ServerOptions& options, 
-                     EventHandler* handler, 
-                     const ProfilingLinker& /*linker*/)
+                     EventHandler* handler)
 {
     //touch_boost_error_category(); // TODO 
     _impl.reset(new ServerImpl(options, handler)); // !!
@@ -74,17 +76,6 @@ bool Server::IsListening()
 {
     return _impl->IsListening();
 }
-/*
-bool Server::RegisterWebServlet(const std::string& path, Servlet servlet, bool take_ownership)
-{
-    return _impl->RegisterWebServlet(path, servlet, take_ownership);
-}
-
-Servlet Server::UnregisterWebServlet(const std::string& path)
-{
-    return _impl->UnregisterWebServlet(path);
-}
-*/
 
 }
 } 

@@ -8,6 +8,7 @@
 #include "../../buffer/buffer.h"
 #include "../../data/request/request.h"
 #include "../../common/smart_ptr/networking_ptr.h"
+#include "message_stream.h"
 
 
 namespace hdcs {
@@ -29,14 +30,12 @@ typedef std::function<void(
 typedef std::function<void(
         ErrorCode )> SendResponseCallback;
 
-// TODO TODO TODO
-//class ServerStream : public ServerMessageStream<SendResponseCallback>
-class ServerStream
+class ServerStream : public ServerMessageStream<SendResponseCallback>
 {
 public:
     ServerStream(IOService& io_service)
-        //: ServerMessageStream<SendResponseCallback>( // for client, ControllerImpl
-        //        ROLE_TYPE_SERVER, io_service, Endpoint())
+        : ServerMessageStream<SendResponseCallback>(
+                ROLE_TYPE_SERVER, io_service, Endpoint())
     {}
 
     virtual ~ServerStream() 
@@ -96,18 +95,16 @@ public:
             const ReadBufferPtr& message, 
             const SendResponseCallback& callback)
     {
-        //FUNCTION_TRACE;
-        //async_send_message(message, callback); // parent method. TODO 
+        async_send_message(message, callback);
     }
 
 private:
     virtual void on_closed()
     {
-        //FUNCTION_TRACE;
         if (_closed_stream_callback)
         {
-            //_closed_stream_callback(
-            //        hdcs::networking::dynamic_pointer_cast<ServerStream>(boost::shared_from_this())); // TODO
+            _closed_stream_callback(
+                    hdcs::networking::dynamic_pointer_cast<ServerStream>(shared_from_this()));
         }
     }
 
@@ -117,7 +114,6 @@ private:
             const ReadBufferPtr& ,
             const SendResponseCallback& )
     {
-        //FUNCTION_TRACE;
         return true;
     }
 
@@ -126,7 +122,6 @@ private:
             const ReadBufferPtr& ,
             const SendResponseCallback& callback)
     {
-        //FUNCTION_TRACE;
         if (callback) callback(HDCS_NETWORK_SUCCESS);
     }
 
@@ -136,19 +131,17 @@ private:
             const ReadBufferPtr& ,
             const SendResponseCallback& callback)
     {
-        //FUNCTION_TRACE;
         if (callback) callback(error_code);
     }
 
     virtual void on_received(
             const RequestPtr& request)
     {
-        //FUNCTION_TRACE;
         if (_received_request_callback)
         {
-            //_received_request_callback(
-            //        hdcs::networking::dynamic_pointer_cast<ServerStream>(boost::shared_from_this()), // TODO
-            //        request);
+            _received_request_callback(
+                    hdcs::networking::dynamic_pointer_cast<ServerStream>(shared_from_this()),
+                    request);
         }
     }
 

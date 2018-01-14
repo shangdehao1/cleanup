@@ -3,16 +3,6 @@
 
 #include <set>
 
-#include <sofa/pbrpc/common_internal.h>
-#include <sofa/pbrpc/rpc_controller.h>
-#include <sofa/pbrpc/rpc_server.h>
-#include <sofa/pbrpc/rpc_server_stream.h>
-#include <sofa/pbrpc/rpc_endpoint.h>
-#include <sofa/pbrpc/rpc_listener.h>
-#include <sofa/pbrpc/service_pool.h>
-#include <sofa/pbrpc/thread_group_impl.h>
-#include <sofa/pbrpc/timer_worker.h>
-
 namespace hdcs {
 namespace networking {
 
@@ -44,7 +34,7 @@ public:
     int ConnectionCount();
 
     void GetPendingStat(int64_t* pending_message_count,
-            int64_t* pending_buffer_size, int64* pending_data_size);
+            int64_t* pending_buffer_size, int64_t* pending_data_size);
 
     bool IsListening();
 
@@ -77,6 +67,7 @@ private:
     void TimerMaintain(const PTime& now);
 
 private:
+
     /*
     struct FlowControlItem
     {
@@ -121,7 +112,7 @@ private:
 
     std::string _server_address; // endpoint
     Endpoint _listen_endpoint;
-    ListenerPtr _listener;  //listener
+    ListenerPtr _listener;        //  
 
     TimerWorkerPtr _timer_worker;
 
@@ -129,11 +120,8 @@ private:
     StreamSet _stream_set;
     FastLock _stream_set_lock;
 
-    IOServicePoolPtr _io_service_pool; //io_service_pool
+    IOServicePoolPtr _io_service_pool;   //io_service_pool
 
-    //WebServicePtr _web_service;
-
-    //DISALLOW_EVIL_CONSTRUCTORS(ServerImpl);
 }; 
 
 } 

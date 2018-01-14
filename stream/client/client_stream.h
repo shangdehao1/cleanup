@@ -14,9 +14,6 @@
 namespace hdcs {
 namespace networking {
 
-class ClientStream;
-typedef ClientStream* ClientStreamPtr; 
-
 // Callback function when closed client stream.
 typedef std::function<void(
         const ClientStreamPtr& )> ClosedClientStreamCallback;
@@ -24,7 +21,6 @@ typedef std::function<void(
 class ClientStream : public MessageStream<ControllerImplPtr>
 {
 public:
-    /*
     ClientStream(IOService& io_service, const Endpoint& endpoint)
         : MessageStream<ControllerImplPtr>(ROLE_TYPE_CLIENT, io_service, endpoint)
     {}
@@ -165,7 +161,8 @@ private:
         //FUNCTION_TRACE;
         // TODO TODO TODO TODO TODO TODO
         Meta meta;
-        if (!meta.ParseFromBoundedZeroCopyStream(message.get(), meta_size))
+        //if (!meta.ParseFromBoundedZeroCopyStream(message.get(), meta_size))
+        if(false)
         {
             //SLOG(ERROR, "on_received(): %s: parse rpc meta failed, ignore",
             //        EndpointToString(_remote_endpoint).c_str());
@@ -248,7 +245,6 @@ private:
             cntl->Done(HDCS_NETWORK_SUCCESS, "succeed");
         }
     }
-    */
 
 private:
     ClosedClientStreamCallback _closed_stream_callback;

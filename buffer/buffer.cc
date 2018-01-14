@@ -4,6 +4,22 @@
 #include "buffer.h"
 #include "tran_buf_pool.h"
 
+/*
+ * when readbuffer/writebuffer inherit from ZeroCopystream,
+ * they will intergrate into protobuf architecture.
+ *
+ * Otherwise, they will become indepentance zerocopy buffer.
+ *
+ * For serialization/compresstion operation: 
+ *    traditional: 
+ *      user program memory-->libary memory (one time memcpy)
+ *    zeroCopy:
+ *      user grogram memory = library memory (zero memcpy)
+ *
+ * the main priciple is that library is responsible malloc/free memory space.
+ * , and then offer raw memory to user.
+ */
+
 namespace hdcs {
 namespace networking {
 
@@ -78,6 +94,8 @@ std::string ReadBuffer::ToString() const
     return str;
 }
 
+// implement virtual class interface 
+// namely, one time reading operation will obtain data of one block.
 bool ReadBuffer::Next(const void** data, int* size)
 {
     if (_cur_it != _buf_list.end())
@@ -172,6 +190,7 @@ int64_t WriteBuffer::TotalBlockSize() const
     return _total_block_size;
 }
 
+// clear up current writebuffer, and insert it into readbuffer
 void WriteBuffer::SwapOut(ReadBuffer* is)
 {
     while (!_buf_list.empty())
@@ -179,10 +198,10 @@ void WriteBuffer::SwapOut(ReadBuffer* is)
         BufHandle& buf_handle = _buf_list.front();
         if (buf_handle.size > 0)
         {
-            buf_handle.offset = 0; // capacity -> offset
+            buf_handle.offset = 0; 
             is->Append(buf_handle);
         }
-        TranBufPool::free(buf_handle.data);
+        TranBufPool::free(buf_handle.data); // maybe just decrease 1 ref.
         _buf_list.pop_front();
     }
     _total_block_size = 0;
@@ -257,6 +276,7 @@ void WriteBuffer::SetData(int64_t pos, const char* data, int size)
     }
 }
 
+// malloc memory space, then return user which use it to fill data.
 bool WriteBuffer::Next(void** data, int* size)
 {
     BufHandleListReverseIterator last = _buf_list.rbegin();
@@ -324,5 +344,6 @@ bool WriteBuffer::Append(const char* data, int size)
     SetData(head, data, size);
     return true;
 }
+
 } 
 } 
