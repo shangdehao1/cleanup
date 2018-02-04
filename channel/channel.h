@@ -1,48 +1,52 @@
-#ifndef _SOFA_PBRPC_RPC_CHANNEL_H_
-#define _SOFA_PBRPC_RPC_CHANNEL_H_
+#ifndef CHANNEL_H_
+#define CHANNEL_H_
 
 #include <vector>
+#include <string>
 
 #include <google/protobuf/service.h>
 
-#include <sofa/pbrpc/common.h>
+#include "stream/endpoint.h"
+#include "common/smart_ptr/networking_ptr.h"
 
-namespace sofa {
-namespace pbrpc {
+
+namespace hdcs {
+namespace networking {
 
 // Defined in other files.
-class RpcClient;
-class RpcChannelImpl;
+class Client;
+class ChannelImpl;
 
-struct RpcChannelOptions {/*{{{*/
+struct ChannelOptions {
     // Connect timeout (in seconds).
     // If a request can't get an healthy connection after a connect_timeout
     // milliseconds, it will fail and return to the caller.
     //
     // Not supported now.
-    int64 connect_timeout;
+    int64_t connect_timeout;
 
     //////////// The following options are only useful for multiple servers. //////////
     // Server load capacity, which limits the max request count pending on one channel.
     // If all servers exceed the limit, calling will returns RPC_ERROR_SERVER_BUSY.
     // Value 0 means no limit, default value is 0.
-    uint32 server_load_capacity;
+    uint32_t server_load_capacity;
 
-    // If initialize the RpcChannel in construct function, default is true.
-    // If create_with_init is false, RpcChannel should be initialized by calling Init().
+    // If initialize the Channel in construct function, default is true.
+    // If create_with_init is false, Channel should be initialized by calling Init().
     bool create_with_init;
 
-    RpcChannelOptions()
+    ChannelOptions()
         : connect_timeout(10)
         , server_load_capacity(0)
         , create_with_init(true)
     {}
-};/*}}}*/
+};
 
-class RpcChannel : public google::protobuf::RpcChannel
+class Channel : public google::protobuf::RpcChannel
 {
 public:
-    class EventHandler {/*{{{*/
+//  ================================== EventHandler ==========================
+    class EventHandler {
     public:
         virtual ~EventHandler() {}
         
@@ -51,9 +55,10 @@ public:
 
         // This method is called when some addresses removed.
         virtual void OnAddressRemoved(const std::vector<std::string>& address_list) = 0;
-    };/*}}}*/
+    };
 
-    class AddressProvider {/*{{{*/
+//  ================================= AddressProvider ========================
+    class AddressProvider {
     public:
         virtual ~AddressProvider() {}
 
@@ -64,37 +69,37 @@ public:
         // Register an event handler.
         // The "event_handler" is take ownership by the address provider.
         virtual bool RegisterEventHandler(EventHandler* event_handler) = 0;
-    };/*}}}*/
+    };
 
 public:
     // Create single server point by server address.
-    // The "rpc_client" is owned by the caller.
+    // The "client" is owned by the caller.
     // The "server_address" should be in format of "ip:port".
-    RpcChannel(RpcClient* rpc_client,
+    Channel(Client* client,
                const std::string& server_address,
-               const RpcChannelOptions& options = RpcChannelOptions());
+               const ChannelOptions& options = ChannelOptions());
 
     // Create single server point by server ip and port.
-    // The "rpc_client" is owned by the caller.
-    RpcChannel(RpcClient* rpc_client,
+    // The "client" is owned by the caller.
+    Channel(Client* client,
                const std::string& server_ip,
-               uint32 server_port,
-               const RpcChannelOptions& options = RpcChannelOptions());
+               uint32_t server_port,
+               const ChannelOptions& options = ChannelOptions());
 
     // Create multiple server points by server address list.
-    // The "rpc_client" is owned by the caller.
-    RpcChannel(RpcClient* rpc_client,
+    // The "client" is owned by the caller.
+    Channel(Client* client,
                const std::vector<std::string>& address_list,
-               const RpcChannelOptions& options = RpcChannelOptions());
+               const ChannelOptions& options = ChannelOptions());
 
     // Create multiple server points by address provider.
-    // The "rpc_client" is owned by the caller.
+    // The "client" is owned by the caller.
     // The "address_provider" is owned by the caller.
-    RpcChannel(RpcClient* rpc_client,
+    Channel(Client* client,
                AddressProvider* address_provider,
-               const RpcChannelOptions& options = RpcChannelOptions());
+               const ChannelOptions& options = ChannelOptions());
 
-    // Initialize RpcChannel.
+    // Initialize Channel.
     // For single server point, it will resolve server address in this function,
     // and if resolve server address succeed return true, otherwise return false.
     // For multiple server points, it will update internal server list and
@@ -103,9 +108,9 @@ public:
     bool Init();
 
     // Destructor.
-    virtual ~RpcChannel();
+    virtual ~Channel();
 
-    // Implements the google::protobuf::RpcChannel interface.  If the
+    // Implements the google::protobuf::Channel interface.  If the
     // "done" is NULL, it's a synchronous call, or it's asynchronous and
     // uses the callback to inform the completion (or failure). 
     virtual void CallMethod(const ::google::protobuf::MethodDescriptor* method,
@@ -115,20 +120,17 @@ public:
                             ::google::protobuf::Closure* done); //
 
 public:
-    const sofa::pbrpc::shared_ptr<RpcChannelImpl>& impl() const
+    const hdcs::networking::shared_ptr<ChannelImpl>& impl() const
     {
         return _impl;
     }
 
 private:
-    sofa::pbrpc::shared_ptr<RpcChannelImpl> _impl;
+    hdcs::networking::shared_ptr<ChannelImpl> _impl;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(RpcChannel);
-}; // class RpcChannel
+}; // class Channel
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace networking 
+} // namespace hdcs 
 
-#endif // _SOFA_PBRPC_RPC_CHANNEL_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

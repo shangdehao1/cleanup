@@ -8,9 +8,10 @@
 #include <google/protobuf/service.h>
 #include <google/protobuf/descriptor.h>
 
-#include "../common/counter.h"
-#include "../common/ptime.h"
-#include "../common/lock/locks.h"
+#include "common/counter.h"
+#include "common/ptime.h"
+#include "common/lock/locks.h"
+#include "common/smart_ptr/networking_ptr.h"
 #include "murmurhash.h"
 
 namespace hdcs {

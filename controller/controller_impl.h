@@ -245,9 +245,10 @@ public:
             }
         }
     }
-    /*
+
     void FillFromMethodDescriptor(const google::protobuf::MethodDescriptor* method)
     {
+        /*
         _method_id = method->full_name();
         if (_user_options.timeout <= 0)
         {
@@ -272,8 +273,8 @@ public:
                 method->options().GetExtension(response_compress_type) :
                 CompressTypeNone;
         }
+        */
     }
-   */
 
     void SetSync()
     {

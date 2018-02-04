@@ -1,0 +1,1 @@
+channel(mem) --> (simple_channel_impl:: channel_impl)

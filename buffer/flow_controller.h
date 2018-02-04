@@ -13,9 +13,11 @@ public:
     FlowController(bool read_no_limit, int read_quota,
                    bool write_no_limit, int write_quota)
         : _read_no_limit(read_no_limit), _read_quota(read_quota)
-        , _write_no_limit(write_no_limit), _write_quota(write_quota) {}
+        , _write_no_limit(write_no_limit), _write_quota(write_quota)
+    {}
 
-    ~FlowController() {}
+    ~FlowController() 
+    {}
 
     // Reset read quota.
     // @param read_no_limit  if set as no limit.
