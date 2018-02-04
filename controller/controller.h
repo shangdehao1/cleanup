@@ -162,7 +162,6 @@ public:
     // will be called immediately.
     //
     // NotifyOnCancel() must be called no more than once per request.
-    // TODO
     virtual void NotifyOnCancel(google::protobuf::Closure* callback);
 
 public:

@@ -1,6 +1,8 @@
 #ifndef MESSAGE_HEADER_H_
 #define MESSAGE_HEADER_H_
 
+// message = message_head + meta + data
+
 namespace hdcs {
 namespace networking {
 

@@ -137,15 +137,10 @@ public:
         return false;
     }
 
-    //void NotifyOnCancel(google::protobuf::Closure*  callback )
-    //{
-    //    TODO to support
-    //}
-     void NotifyOnCancel( )
-     {
-          //TODO to support
-     }
-
+    void NotifyOnCancel(google::protobuf::Closure*  callback )
+    {
+        //TODO to support
+    }
 
     // -----------------------------------------------------------------
     // set/read some information 
@@ -230,6 +225,8 @@ public:
     void PushDoneCallback(const InternalDoneCallback& callback)
     {
         //SCHECK(callback);
+        // Client_impl::DoneCallback.
+        // simpleChannel::DoneCallback
         _done_callbacks.push_back(callback);
     }
 

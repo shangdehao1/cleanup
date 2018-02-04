@@ -54,16 +54,18 @@ void BinaryRequest::ProcessRequest(
         return;
     }
 
+    // service and handing method.
     google::protobuf::Service* service = method_board->GetServiceBoard()->Service();
     const google::protobuf::MethodDescriptor* method_desc = method_board->Descriptor();
 
+    // request 
     google::protobuf::Message* request = service->GetRequestPrototype(method_desc).New();
     CompressType compress_type =
         _req_meta.has_compress_type() ? _req_meta.compress_type(): CompressTypeNone;
     bool parse_request_return = false;
     if (compress_type == CompressTypeNone)
     {
-        //parse_request_return = request->ParseFromZeroCopyStream(_req_body.get());
+        parse_request_return = request->ParseFromZeroCopyStream(_req_body.get());
     }
     else
     {
@@ -83,7 +85,7 @@ void BinaryRequest::ProcessRequest(
 
     google::protobuf::Message* response = service->GetResponsePrototype(method_desc).New();
 
-    Controller* controller = new Controller(); //  TODO
+    Controller* controller = new Controller();
     const ControllerImplPtr& cntl = controller->impl();
     cntl->SetSequenceId(_req_meta.sequence_id());
     cntl->SetMethodId(_req_meta.method());
@@ -98,7 +100,9 @@ void BinaryRequest::ProcessRequest(
     //cntl->SetResponseCompressType(_req_meta.has_expected_response_compress_type() ?
     //        _req_meta.expected_response_compress_type() : CompressTypeNone);
 
-    CallMethod(method_board, controller, request, response);
+    // request = service->GetRequestPrototype()
+    // reponse = service->GetResponsePrototype();
+    CallMethod(method_board, controller, request, response); // parent method...dehao
 }
 
 ReadBufferPtr BinaryRequest::AssembleSucceedResponse(
@@ -130,19 +134,20 @@ ReadBufferPtr BinaryRequest::AssembleSucceedResponse(
     */
     header.meta_size = static_cast<int>(write_buffer.ByteCount() - header_pos - header_size);
     bool ser_ret = false;
-    /*
+
     if (meta.compress_type() == CompressTypeNone)
     {
         ser_ret = response->SerializeToZeroCopyStream(&write_buffer);
     }
     else
     {
+        /*
         hdcs::networking::scoped_ptr<AbstractCompressedOutputStream> os(
                 get_compressed_output_stream(&write_buffer, meta.compress_type()));
         ser_ret = response->SerializeToZeroCopyStream(os.get());
         os->Flush();
+        */
     }
-    */
     if (!ser_ret)
     {
         err = "serialize response message failed";

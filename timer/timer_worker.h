@@ -1,7 +1,12 @@
 #ifndef TIMER_WORKER_H_
 #define TIMER_WORKER_H_
 
-//#include <sofa/pbrpc/common_internal.h>
+#include <functional>
+
+#include "common/smart_ptr/networking_ptr.h"
+#include "common/lock/locks.h"
+#include "common/common_internal.h"
+#include "timer/ptime.h"
 
 namespace hdcs {
 namespace networking {
@@ -9,7 +14,8 @@ namespace networking {
 class TimerWorker : public hdcs::networking::enable_shared_from_this<TimerWorker>
 {
 public:
-    typedef boost::function<void(const PTime& )> WorkRoutine;
+    // boost::posix_time::ptime
+    typedef std::function<void(const PTime& )> WorkRoutine;
 
 public:
     TimerWorker(IOService& io_service)
@@ -23,7 +29,6 @@ public:
 
     ~TimerWorker()
     {
-        SOFA_PBRPC_FUNCTION_TRACE;
         stop();
     }
 
@@ -45,12 +50,16 @@ public:
     void start()
     {
         if (_is_running) return;
+
         _is_running = true;
 
         ScopedLocker<MutexLock> _(_timer_lock);
+        // from now begin, after _time_duration end.
         _timer.expires_from_now(_time_duration);
-        _timer.async_wait(_strand.wrap(boost::bind(
-                &TimerWorker::on_timeout, shared_from_this(), _1)));
+        _timer.async_wait(
+                _strand.wrap(
+                    boost::bind(&TimerWorker::on_timeout, shared_from_this(), _1)
+                    ));
     }
 
     void stop()
@@ -59,10 +68,14 @@ public:
         _is_running = false;
 
         ScopedLocker<MutexLock> _(_timer_lock);
+        // timer will be canceled.
+        // all callback of async_operation will be called, and error will be equal to operation_aborted.
         _timer.cancel();
     }
 
 private:
+    // when async_operation be canceled, or
+    // timeout
     void on_timeout(const boost::system::error_code& ec)
     {
         if (_is_running)
@@ -85,17 +98,17 @@ private:
     IOService& _io_service;
     volatile bool _is_running;
 
+    // boost::posix_time::time_duration
     TimeDuration _time_duration;
+    // function object.
     WorkRoutine _work_routine;
-
+    // boost::asio::deadline_timer
     IOServiceTimer _timer;
     MutexLock _timer_lock;
     IOServiceStrand _strand;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(TimerWorker);
-}; // class TimerWorker
+}; // timer_worker
 
-} // namespace pbrpc
-} // namespace sofa
-
+} // networking 
+} // hdcs
 #endif

@@ -8,13 +8,11 @@ namespace hdcs {
 namespace networking {
 
 Controller::Controller()
-    : _impl(new ControllerImpl()) // the actual Controller implement.
-{
-}
+    : _impl(new ControllerImpl())
+{}
 
 Controller::~Controller()
-{
-}
+{}
 
 std::string Controller::LocalAddress() const
 {
@@ -26,7 +24,6 @@ std::string Controller::RemoteAddress() const
     return hdcs::networking::EndPointToString(_impl->RemoteEndpoint());
 }
 
-// re-create a new ControllerImp object.
 void Controller::Reset()
 {
     _impl.reset(new ControllerImpl());
@@ -114,11 +111,9 @@ bool Controller::IsCanceled() const
     return _impl->IsCanceled();
 }
 
-//void Controller::NotifyOnCancel(google::protobuf::Closure* callback)
-void Controller::NotifyOnCancel()
+void Controller::NotifyOnCancel(google::protobuf::Closure* callback)
 {
-    //_impl->NotifyOnCancel(callback);
-    _impl->NotifyOnCancel();
+    _impl->NotifyOnCancel(callback);
 }
 
 }

@@ -60,6 +60,7 @@ public:
             std::string& err) = 0;
 
 public:
+    // interface 
     void CallMethod(
             MethodBoard* method_board,
             Controller* controller,
@@ -137,44 +138,7 @@ protected:
     Endpoint _remote_endpoint;
     PTime _received_time;
 };
-/*
-class BinaryRequest : public Request
-{
-public:
-    BinaryRequest();
-    virtual ~BinaryRequest();
 
-    // why ???!!!!dehao
-    //virtual RequestType RequestType();
-    //virtual RequestType RequestType();
-    RequestType xxx;
-
-    virtual std::string Method();
-
-    virtual uint64_t SequenceId();
-
-    virtual void ProcessRequest(
-            const ServerStreamWPtr& server_stream,
-            const ServicePoolPtr& service_pool);
-
-    virtual ReadBufferPtr AssembleSucceedResponse(
-            const ControllerImplPtr& cntl,
-            const google::protobuf::Message* response,
-            std::string& err);
-
-    virtual ReadBufferPtr AssembleFailedResponse(
-            int32_t error_code,
-            const std::string& reason,
-            std::string& err);
-
-private:
-    friend class BinaryRequestParser;
-
- //   MessageHeader _req_header;
- //   Meta          _req_meta;
- //   ReadBufferPtr    _req_body;
-};
-*/
 
 } 
 }  

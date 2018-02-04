@@ -1,15 +1,13 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef COMMON_INTERNAL_H_
 #define COMMON_INTERNAL_H_
 
 #include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/function.hpp>
 #include <memory>
 
-#include "./smart_ptr/networking_ptr.h"
+#include "smart_ptr/networking_ptr.h"
 
 namespace hdcs {
 namespace networking {
@@ -58,11 +56,32 @@ typedef hdcs::networking::shared_ptr<FlowController> FlowControllerPtr;
 class WaitEvent;
 typedef hdcs::networking::shared_ptr<WaitEvent> WaitEventPtr;
 
+
+///////////////////////////////////////////////////////////////////////
+
+
 class IOServicePool;
 typedef hdcs::networking::shared_ptr<IOServicePool> IOServicePoolPtr;
 
 class WebService;
 typedef hdcs::networking::shared_ptr<WebService> WebServicePtr;
+
+typedef boost::asio::io_service IOService;
+typedef hdcs::networking::shared_ptr<IOService> IOServicePtr;
+
+typedef boost::asio::io_service::work IOServiceWork;
+typedef hdcs::networking::shared_ptr<IOServiceWork> IOServiceWorkPtr;
+
+typedef boost::asio::io_service::strand IOServiceStrand;
+typedef hdcs::networking::shared_ptr<IOServiceStrand> IOServiceStrandPtr;
+
+typedef boost::asio::deadline_timer IOServiceTimer;
+typedef hdcs::networking::shared_ptr<IOServiceTimer> IOServiceTimerPtr;
+
+typedef boost::posix_time::ptime PTime;
+
+
+
 
 /*
 #define SOFA_PBRPC_DECLARE_RESOURCE_COUNTER(name_) \

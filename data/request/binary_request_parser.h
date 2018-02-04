@@ -32,7 +32,7 @@ private:
     };
     ParseState _state; // current parsing state
     int _bytes_recved; // bytes received in current state
-    BinaryRequestPtr _req;
+    BinaryRequestPtr _req; // request!!!
 
     static const int64_t MAX_MESSAGE_SIZE;
 }; 

@@ -9,7 +9,7 @@
 namespace sofa {
 namespace pbrpc {
 
-SimpleRpcChannelImpl::SimpleRpcChannelImpl(const RpcClientImplPtr& rpc_client_impl,/*{{{*/
+SimpleRpcChannelImpl::SimpleRpcChannelImpl(const RpcClientImplPtr& rpc_client_impl,
                                            const std::string& server_address,
                                            const RpcChannelOptions& options)
     : _client_impl(rpc_client_impl)
@@ -18,13 +18,13 @@ SimpleRpcChannelImpl::SimpleRpcChannelImpl(const RpcClientImplPtr& rpc_client_im
     , _is_mock(false)
     , _resolve_address_succeed(false)
 {
-}/*}}}*/
+}
 
-SimpleRpcChannelImpl::~SimpleRpcChannelImpl()/*{{{*/
+SimpleRpcChannelImpl::~SimpleRpcChannelImpl()
 {
-}/*}}}*/
+}
 
-bool SimpleRpcChannelImpl::Init()/*{{{*/
+bool SimpleRpcChannelImpl::Init()
 {
     // what's mock channel? 
     if (g_enable_mock && _server_address.find(SOFA_PBRPC_MOCK_CHANNEL_ADDRESS_PREFIX) == 0)
@@ -48,12 +48,12 @@ bool SimpleRpcChannelImpl::Init()/*{{{*/
         _resolve_address_succeed = false;
         return false;
     }
-}/*}}}*/
+}
 
-void SimpleRpcChannelImpl::Stop()/*{{{*/
+void SimpleRpcChannelImpl::Stop()
 {
     SLOG(INFO, "Stop(): simple rpc channel stopped: %s", _server_address.c_str());
-}/*}}}*/
+}
 
 // this function will be called by stub.
 void SimpleRpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor* method,/*{{{*/
@@ -118,12 +118,12 @@ void SimpleRpcChannelImpl::CallMethod(const ::google::protobuf::MethodDescriptor
     WaitDone(cntl);
 }/*}}}*/
 
-uint32 SimpleRpcChannelImpl::WaitCount()/*{{{*/
+uint32 SimpleRpcChannelImpl::WaitCount()
 {
     return _wait_count;
-}/*}}}*/
+}
 
-void SimpleRpcChannelImpl::WaitDone(const RpcControllerImplPtr& cntl)/*{{{*/
+void SimpleRpcChannelImpl::WaitDone(const RpcControllerImplPtr& cntl)
 {
     // if sync, wait for callback done
     if (cntl->IsSync())
@@ -131,9 +131,9 @@ void SimpleRpcChannelImpl::WaitDone(const RpcControllerImplPtr& cntl)/*{{{*/
         cntl->WaitEvent()->Wait();
         SCHECK(cntl->IsDone());
     }
-}/*}}}*/
+}
 
-void SimpleRpcChannelImpl::DoneCallback(google::protobuf::Closure* done,/*{{{*/
+void SimpleRpcChannelImpl::DoneCallback(google::protobuf::Closure* done,
                                         const RpcControllerImplPtr& cntl)
 {
     --_wait_count;
@@ -149,9 +149,9 @@ void SimpleRpcChannelImpl::DoneCallback(google::protobuf::Closure* done,/*{{{*/
         SCHECK(done != NULL);
         _client_impl->GetCallbackThreadGroup()->post(done);
     }
-}/*}}}*/
+}
 
-void SimpleRpcChannelImpl::MockDoneCallback(RpcControllerImplPtr cntl,/*{{{*/
+void SimpleRpcChannelImpl::MockDoneCallback(RpcControllerImplPtr cntl,
                                             const ::google::protobuf::Message* request,
                                             ::google::protobuf::Message* /*response*/)
 {
@@ -160,9 +160,7 @@ void SimpleRpcChannelImpl::MockDoneCallback(RpcControllerImplPtr cntl,/*{{{*/
         cntl->NotifyRequestSent(RpcEndpoint(), request->ByteSize());
     }
     cntl->Done(cntl->ErrorCode(), cntl->Reason());
-}/*}}}*/
+}
 
 } // namespace pbrpc
 } // namespace sofa
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */

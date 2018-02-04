@@ -19,7 +19,6 @@ public:
     BinaryRequest();
     virtual ~BinaryRequest();
 
-    // why ???!!!!dehao
     //virtual RequestType RequestType();
 
     virtual std::string Method();
@@ -43,9 +42,9 @@ public:
 private:
     friend class BinaryRequestParser;
 
-    MessageHeader _req_header;
-    Meta          _req_meta;
-    ReadBufferPtr    _req_body;
+    MessageHeader _req_header; // 
+    Meta          _req_meta;   //
+    ReadBufferPtr    _req_body;//
 };
 
 }

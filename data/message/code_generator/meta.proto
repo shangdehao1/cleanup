@@ -6,7 +6,6 @@ package hdcs.networking;
 
 message Meta {
 
-  /////////////////////////////////////////////////////
   // The following fields are used both for request and response.
 
   // Message type.
@@ -19,7 +18,6 @@ message Meta {
   // Message sequence id.
   required uint64 sequence_id = 2;
 
-  /////////////////////////////////////////////////////
   // The following fields are used only for request.
 
   // Method full name.
@@ -29,7 +27,6 @@ message Meta {
   // Server timeout in milli-seconds.
   optional int64 server_timeout = 101;
 
-  /////////////////////////////////////////////////////
   // The following fields are used only for response.
 
   // Set as true if the call is failed.
@@ -41,7 +38,6 @@ message Meta {
   // The error reason if the call is failed.
   optional string reason = 202;
 
-  /////////////////////////////////////////////////////
   // Compression related fields.
 
   // Set the request/response compress type.

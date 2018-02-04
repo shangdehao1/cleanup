@@ -1,7 +1,7 @@
-#include <sofa/pbrpc/timeout_manager_impl.h>
+#include "timeout_manager_impl.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 TimeoutManagerImpl::TimeoutManagerImpl()
     : _is_running(false)
@@ -9,8 +9,7 @@ TimeoutManagerImpl::TimeoutManagerImpl()
     , _last_ticks(0)
     , _rectify_ticks(time_duration_milliseconds(kTimerGranularity).ticks())
     , _next_id(1)
-{
-}
+{}
 
 TimeoutManagerImpl::~TimeoutManagerImpl()
 {
@@ -26,7 +25,9 @@ void TimeoutManagerImpl::start()
 {
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (_is_running)
+    {
         return;
+    }
     _is_running = true;
 
     _thread_group.reset(new ThreadGroupImpl(kThreadCount));
@@ -73,20 +74,20 @@ void TimeoutManagerImpl::clear()
     }
 }
 
-TimeoutManagerImpl::Id TimeoutManagerImpl::add(int64 interval, Callback* callback)
+TimeoutManagerImpl::Id TimeoutManagerImpl::add(int64_t interval, Callback* callback)
 {
-    SCHECK_GE(interval, 0);
-    SCHECK(callback->IsSelfDelete());
+    //SCHECK_GE(interval, 0);
+    //SCHECK(callback->IsSelfDelete());
     ScopedLocker<MutexLock> _(_timeouts_lock);
     Id id = _next_id++;
     _timeouts.insert(Event(id, calc_expiration(interval), -1, callback));
     return id;
 }
 
-TimeoutManagerImpl::Id TimeoutManagerImpl::add_repeating(int64 interval, Callback* callback)
+TimeoutManagerImpl::Id TimeoutManagerImpl::add_repeating(int64_t interval, Callback* callback)
 {
-    SCHECK_GE(interval, 0);
-    SCHECK(!callback->IsSelfDelete());
+    //SCHECK_GE(interval, 0);
+    //SCHECK(!callback->IsSelfDelete());
     ScopedLocker<MutexLock> _(_timeouts_lock);
     Id id = _next_id++;
     _timeouts.insert(Event(id, calc_expiration(interval), interval, callback));
@@ -112,8 +113,11 @@ bool TimeoutManagerImpl::erase(Id id)
 
 void TimeoutManagerImpl::timer_run(const PTime& now)
 {
-    if (!_is_running) return;
-    int64 now_ticks = (now - _epoch_time).ticks();
+    if (!_is_running)
+    {
+        return;
+    }
+    int64_t now_ticks = (now - _epoch_time).ticks();
     _last_ticks = now_ticks;
 
     EventVec expired;
@@ -149,5 +153,5 @@ void TimeoutManagerImpl::timer_run(const PTime& now)
     }
 }
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace networking
+} // namespace hdcs 

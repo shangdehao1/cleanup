@@ -1,7 +1,3 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 #ifndef TIMEOUT_MANAGER_IMPL_H_
 #define TIMEOUT_MANAGER_IMPL_H_
 
@@ -12,25 +8,27 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
 
-#include <sofa/pbrpc/common_internal.h>
-#include <sofa/pbrpc/timeout_manager.h>
-#include <sofa/pbrpc/thread_group_impl.h>
-#include <sofa/pbrpc/timer_worker.h>
+#include "common/common_internal.h"
+#include "closure/closure.h"
+#include "closure/ext_closure.h"
+#include "common/lock/locks.h"
+#include "timer/timeout_manager.h"
+#include "timer/timer_worker.h"
+#include "io_service/thread_group_impl.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-// Defined in this file.
 class TimeoutManagerImpl;
-typedef sofa::pbrpc::shared_ptr<TimeoutManagerImpl> TimeoutManagerImplPtr;
+typedef hdcs::networking::shared_ptr<TimeoutManagerImpl> TimeoutManagerImplPtr;
 
-class TimeoutManagerImpl : public sofa::pbrpc::enable_shared_from_this<TimeoutManagerImpl>
+class TimeoutManagerImpl : public hdcs::networking::enable_shared_from_this<TimeoutManagerImpl>
 {
 public:
     // Thread number for timer and callbacks.
     const static int kThreadCount = 1;
     // Timeout granularity of timer in milli-seconds.
-    const static int64 kTimerGranularity = 10; 
+    const static int64_t kTimerGranularity = 10; 
 
     typedef TimeoutManager::Id Id;
     typedef TimeoutManager::Type Type;
@@ -47,15 +45,15 @@ public:
 
     void clear();
 
-    Id add(int64 interval, Callback* callback);
+    Id add(int64_t interval, Callback* callback);
 
-    Id add_repeating(int64 interval, Callback* callback);
+    Id add_repeating(int64_t interval, Callback* callback);
 
     bool erase(Id id);
 
 private:
     // Given interval in milli-seconds, calculate expiration ticks.
-    inline int64 calc_expiration(int64 interval)
+    inline int64_t calc_expiration(int64_t interval)
     {
         return _last_ticks + time_duration_milliseconds(interval).ticks() + _rectify_ticks;
     }
@@ -65,10 +63,10 @@ private:
 private:
     struct Event {
         Id id;
-        int64 expiration;
-        int64 repeat_interval;
+        int64_t expiration;
+        int64_t repeat_interval;
         Callback* callback;
-        Event(Id i, int64 e, int64 r, Callback* c)
+        Event(Id i, int64_t e, int64_t r, Callback* c)
             : id(i), expiration(e), repeat_interval(r), callback(c) {}
     };
 
@@ -79,7 +77,7 @@ private:
             Event, Id, &Event::id
             > >,
         boost::multi_index::ordered_non_unique<boost::multi_index::member<
-            Event, int64, &Event::expiration
+            Event, int64_t, &Event::expiration
             > >
         >
     > Set;
@@ -96,8 +94,8 @@ private:
     volatile bool _is_running;
     MutexLock _start_stop_lock;
     PTime _epoch_time;
-    volatile int64 _last_ticks; 
-    int64 _rectify_ticks;
+    volatile int64_t _last_ticks; 
+    int64_t _rectify_ticks;
 
     ThreadGroupImplPtr _thread_group;
     TimerWorkerPtr _timer_worker;
@@ -107,9 +105,7 @@ private:
     MutexLock _timeouts_lock;
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace hdcs
+} // namespace networking
 
-#endif // _SOFA_PBRPC_TIMEOUT_MANAGER_IMPL_H_
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+#endif

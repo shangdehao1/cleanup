@@ -98,15 +98,14 @@ int BinaryRequestParser::Parse(const char* buf,
             if (_bytes_recved == _req->_req_header.message_size)
             {
                 // receive body complete
-                // TODO
-                //if (!_req->_req_meta.ParseFromBoundedZeroCopyStream(
-                //            _req->_req_body.get(), _req->_req_header.meta_size))
-                //{
-                    // parse meta failed
-                    //SLOG(ERROR, "Parse(): %s: parse rpc meta failed",
-                //    //        EndpointToString(_req->_remote_endpoint).c_str());
+                if (!_req->_req_meta.ParseFromBoundedZeroCopyStream(
+                            _req->_req_body.get(), _req->_req_header.meta_size))
+                {
+                     //parse meta failed
+                     //SLOG(ERROR, "Parse(): %s: parse rpc meta failed",
+                     //       EndpointToString(_req->_remote_endpoint).c_str());
                     return -1;
-                //}
+                }
                 return 1;
             }
             return 0;

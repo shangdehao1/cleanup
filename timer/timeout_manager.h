@@ -1,24 +1,25 @@
-#ifndef _SOFA_PBRPC_TIMEOUT_MANAGER_H_
-#define _SOFA_PBRPC_TIMEOUT_MANAGER_H_
+#ifndef TIMEOUT_MANAGER_H_
+#define TIMEOUT_MANAGER_H_
 
-#include <sofa/pbrpc/common.h>
-#include <sofa/pbrpc/ext_closure.h>
+//#include <hdcs/networking/common.h>
+//#include <hdcs/networking/ext_closure.h>
+#include "common/smart_ptr/networking_ptr.h"
+#include "closure/closure.h"
+#include "closure/ext_closure.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
-// Defined in this file.
 class TimeoutManager;
-typedef sofa::pbrpc::shared_ptr<TimeoutManager> TimeoutManagerPtr;
+typedef hdcs::networking::shared_ptr<TimeoutManager> TimeoutManagerPtr;
 
-// Defined in other files.
 class TimeoutManagerImpl;
 
 class TimeoutManager
 {
 public:
     // Timeout id.  Every timeout event will be assigned an unique id.
-    typedef uint64 Id;
+    typedef uint64_t Id;
 
     // Timeout type.  Used in callback.
     //   - TIMEOUTED : callback triggered when timeout.
@@ -32,12 +33,15 @@ public:
 
     // Callback.  The callback should be a light weight routine, which means you
     // should not do numerous things or block it.
-    typedef ExtClosure<void(Id /*id*/, Type /*type*/)> Callback;
+    // param 1 : id
+    // parma 2 : type
+    typedef ExtClosure<void(Id, Type)> Callback;
 
     // Contructor.
     TimeoutManager();
 
-    // Destructor. It will invoke clear() to clear all timeout events.
+    // Destructor.
+    // It will invoke clear() to clear all timeout events.
     ~TimeoutManager();
 
     // Clear all timeout events from the manager.  All associated callbacks will
@@ -58,7 +62,7 @@ public:
     //   - Cleared, with type = CLEARED.
     //
     // After callback done, the "callback" closure will be self deleted.
-    Id add(int64 interval, Callback* callback);
+    Id add(int64_t interval, Callback* callback);
 
     // Add a repeating timeout event that will be triggered after each "interval"
     // milli-seconds.
@@ -75,7 +79,7 @@ public:
     //
     // If callbacked in case of ERASED or CLEARED, the "callback" closure will
     // deleted by the manager.
-    Id add_repeating(int64 interval, Callback* callback);
+    Id add_repeating(int64_t interval, Callback* callback);
 
     // Erase a given timeout event, returns true if the event was actually erased
     // and false if it didn't exist.
@@ -84,12 +88,11 @@ public:
     bool erase(Id id);
 
 private:
-    sofa::pbrpc::shared_ptr<TimeoutManagerImpl> _imp;
 
-    SOFA_PBRPC_DISALLOW_EVIL_CONSTRUCTORS(TimeoutManager);
+    hdcs::networking::shared_ptr<TimeoutManagerImpl> _imp;
 };
 
-} // namespace pbrpc
-} // namespace sofa
+} // namespace networking
+} // namespace hdcs
 
-#endif // _SOFA_PBRPC_TIMEOUT_MANAGER_H_
+#endif

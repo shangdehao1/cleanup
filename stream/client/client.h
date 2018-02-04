@@ -1,7 +1,7 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include "client_impl.h"
+//#include "client_impl.h"
 
 namespace hdcs {
 namespace networking {
@@ -53,10 +53,10 @@ public:
     explicit Client(const ClientOptions& options = ClientOptions());
     virtual ~Client();
 
-    // Get the current rpc client options.
+    // Get the current  client options.
     ClientOptions GetOptions();
 
-    // Reset the rpc client options.
+    // Reset the  client options.
     //
     // Current only these options can be reset (others will be ignored):
     // * max_pending_buffer_size : will take effective immediately.
@@ -65,9 +65,9 @@ public:
     //
     // Though you want to reset only part of these options, the other options also
     // need to be set.  Maybe you can reset by this way:
-    //     ClientOptions options = rpc_client->GetOptions();
+    //     ClientOptions options = _client->GetOptions();
     //     options.max_throughput_in = new_max_throughput_in; // reset some options
-    //     rpc_client->ResetOptions(options);
+    //     _client->ResetOptions(options);
     //
     // The old and new value of reset options will be print to INFO log.
     void ResetOptions(const ClientOptions& options);
@@ -75,7 +75,7 @@ public:
     // Get the count of current alive connections.
     int ConnectionCount();
 
-    // Shutdown the rpc client.
+    // Shutdown the  client.
     void Shutdown();
 
 public:
@@ -85,11 +85,9 @@ public:
     }
 
 private:
-    sofa::pbrpc::shared_ptr<ClientImpl> _impl;
-
-    //DISALLOW_EVIL_CONSTRUCTORS(Client);
+    hdcs::networking::shared_ptr<ClientImpl> _impl;
 };
 
 } // namespace 
 } // namespace 
-#endif // CLIENT_H_
+#endif // 

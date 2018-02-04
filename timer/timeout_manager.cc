@@ -1,12 +1,9 @@
-// Copyright (c) 2014 Baidu.com, Inc. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 
-#include <sofa/pbrpc/timeout_manager.h>
-#include <sofa/pbrpc/timeout_manager_impl.h>
+#include "timeout_manager.h"
+#include "timeout_manager_impl.h"
 
-namespace sofa {
-namespace pbrpc {
+namespace hdcs {
+namespace networking {
 
 TimeoutManager::TimeoutManager()
 {
@@ -25,12 +22,12 @@ void TimeoutManager::clear()
     _imp->clear();
 }
 
-TimeoutManager::Id TimeoutManager::add(int64 interval, Callback* callback)
+TimeoutManager::Id TimeoutManager::add(int64_t interval, Callback* callback)
 {
     return _imp->add(interval, callback);
 }
 
-TimeoutManager::Id TimeoutManager::add_repeating(int64 interval, Callback* callback)
+TimeoutManager::Id TimeoutManager::add_repeating(int64_t interval, Callback* callback)
 {
     return _imp->add_repeating(interval, callback);
 }
@@ -40,7 +37,5 @@ bool TimeoutManager::erase(Id id)
     return _imp->erase(id);
 }
 
-} // namespace pbrpc
-} // namespace sofa
-
-/* vim: set ts=4 sw=4 sts=4 tw=100 */
+} // namespace networking 
+} // namespace hdcs 

@@ -1,10 +1,7 @@
 #include <algorithm>
 #include <deque>
 
-#include <sofa/pbrpc/rpc_client_impl.h>
-#include <sofa/pbrpc/tran_buf_pool.h>
-#include <sofa/pbrpc/flow_controller.h>
-#include <sofa/pbrpc/compressed_stream.h>
+#include "client_impl.h"
 
 namespace hdcs {
 namespace networking {
@@ -27,26 +24,27 @@ ClientImpl::ClientImpl(const ClientOptions& options)
         std::max(0L, _options.max_pending_buffer_size * 1024L * 1024L);
     _keep_alive_ticks = _options.keep_alive_time == -1 ?
         -1 : std::max(1, _options.keep_alive_time) * _ticks_per_second;
-
-    LOG(INFO) << "ClientImpl(): quota_in="
-              << (_slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L))
-              << "MB/s, quota_out="
-              << (_slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L))
-              << "MB/s, max_pending_buffer_size="
-              << (_max_pending_buffer_size / (1024L * 1024L))
-              << "MB, keep_alive_time="
-              << (_keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second)
-              << "seconds";
+    
+    //LOG(INFO) << "ClientImpl(): quota_in="
+    //          << (_slice_quota_in == -1 ? -1 : _slice_quota_in * _slice_count / (1024L * 1024L))
+    //          << "MB/s, quota_out="
+    //          << (_slice_quota_out == -1 ? -1 : _slice_quota_out * _slice_count / (1024L * 1024L))
+    //          << "MB/s, max_pending_buffer_size="
+    //          << (_max_pending_buffer_size / (1024L * 1024L))
+    //          << "MB, keep_alive_time="
+    //          << (_keep_alive_ticks == -1 ? -1 : _keep_alive_ticks / _ticks_per_second)
+    //          << "seconds";
 }
 
 ClientImpl::~ClientImpl()
 {
-    SOFA_PBRPC_FUNCTION_TRACE;
+    //FUNCTION_TRACE;
     Stop();
 }
 
 void ClientImpl::Start()
 {
+    /*
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (_is_running) return;
 
@@ -55,7 +53,7 @@ void ClientImpl::Start()
                 _slice_quota_out == -1, _slice_quota_out));
 
     _maintain_thread_group.reset(new ThreadGroupImpl(
-                2, "sofa_pbrpc_client_maintain_thread_group"));
+                2, "client_maintain_thread_group"));
     _maintain_thread_group->start();
 
     _callback_thread_group.reset(new ThreadGroupImpl(
@@ -77,11 +75,13 @@ void ClientImpl::Start()
 
     _is_running = true;
 
-    LOG(INFO) << "Start(): rpc client started";
+    //LOG(INFO) << "Start(): rpc client started";
+    */
 }
 
 void ClientImpl::Stop()
 {
+    /*
     ScopedLocker<MutexLock> _(_start_stop_lock);
     if (!_is_running) return;
     _is_running = false;
@@ -101,8 +101,9 @@ void ClientImpl::Stop()
     _callback_thread_group.reset();
     _maintain_thread_group.reset();
     _flow_controller.reset();
+    */
 
-    LOG(INFO) << "Stop(): rpc client stopped";
+    //LOG(INFO) << "Stop(): rpc client stopped";
 }
 
 ClientOptions ClientImpl::GetOptions()
@@ -112,10 +113,11 @@ ClientOptions ClientImpl::GetOptions()
 
 void ClientImpl::ResetOptions(const ClientOptions& options)
 {
-    int64 old_slice_quota_in = _slice_quota_in;
-    int64 old_slice_quota_out = _slice_quota_out;
-    int64 old_max_pending_buffer_size = _max_pending_buffer_size;
-    int64 old_keep_alive_ticks = _keep_alive_ticks;
+    /*
+    int64_t old_slice_quota_in = _slice_quota_in;
+    int64_t old_slice_quota_out = _slice_quota_out;
+    int64_t old_max_pending_buffer_size = _max_pending_buffer_size;
+    int64_t old_keep_alive_ticks = _keep_alive_ticks;
 
     _options.max_throughput_in = options.max_throughput_in;
     _options.max_throughput_out = options.max_throughput_out;
@@ -157,6 +159,7 @@ void ClientImpl::ResetOptions(const ClientOptions& options)
               << "seconds(old "
               << (old_keep_alive_ticks == -1 ? -1 : old_keep_alive_ticks / _ticks_per_second)
               << "seconds)";
+              */
 }
 
 int ClientImpl::ConnectionCount()
@@ -176,6 +179,7 @@ void ClientImpl::CallMethod(const google::protobuf::Message* request,
         google::protobuf::Message* response,
         const ControllerImplPtr& cntl)
 {
+    /*
     if (!_is_running)
     {
         SLOG(ERROR, "CallMethod(): client not in running, ignore");
@@ -212,7 +216,7 @@ void ClientImpl::CallMethod(const google::protobuf::Message* request,
     meta.set_type(Meta::REQUEST);
     meta.set_sequence_id(cntl->SequenceId());
     meta.set_method(cntl->MethodId());
-    int64 timeout = cntl->Timeout();
+    int64_t timeout = cntl->Timeout();
     if (timeout > 0)
     {
         meta.set_server_timeout(timeout);
@@ -223,7 +227,7 @@ void ClientImpl::CallMethod(const google::protobuf::Message* request,
     MessageHeader header;
     int header_size = sizeof(header);
     WriteBuffer write_buffer;
-    int64 header_pos = write_buffer.Reserve(header_size);
+    int64_t header_pos = write_buffer.Reserve(header_size);
     if (header_pos < 0)
     {
         LOG(ERROR) << "CallMethod(): " << EndpointToString(cntl->RemoteEndpoint())
@@ -283,6 +287,7 @@ void ClientImpl::CallMethod(const google::protobuf::Message* request,
 
     // call method
     stream->call_method(cntl);
+    */
 }
 
 const ThreadGroupImplPtr& ClientImpl::GetCallbackThreadGroup() const
@@ -293,11 +298,12 @@ const ThreadGroupImplPtr& ClientImpl::GetCallbackThreadGroup() const
 bool ClientImpl::ResolveAddress(const std::string& address,
         Endpoint* endpoint)
 {
-    return sofa::pbrpc::ResolveAddress(_work_thread_group->io_service(), address, endpoint);
+    return hdcs::networking::ResolveAddress(_work_thread_group->io_service(), address, endpoint);
 }
 
 ClientStreamPtr ClientImpl::FindOrCreateStream(const Endpoint& remote_endpoint)
 {
+    /*
     ClientStreamPtr stream;
     bool create = false;
     {
@@ -326,10 +332,12 @@ ClientStreamPtr ClientImpl::FindOrCreateStream(const Endpoint& remote_endpoint)
         stream->async_connect();
     }
     return stream;
+    */
 }
 
 void ClientImpl::OnClosed(const ClientStreamPtr& stream)
 {
+    /*
     if (!_is_running)
         return;
 
@@ -341,16 +349,19 @@ void ClientImpl::OnClosed(const ClientStreamPtr& stream)
         return;
     }
     _stream_map.erase(stream->remote_endpoint());
+    */
 }
 
 void ClientImpl::StopStreams()
 {
+    /*
     ScopedLocker<FastLock> _(_stream_map_lock);
     for (StreamMap::iterator it = _stream_map.begin();
             it != _stream_map.end(); ++it)
     {
         it->second->close("client stopped");
     }
+    */
 }
 
 void ClientImpl::ClearStreams()
@@ -368,10 +379,10 @@ void ClientImpl::DoneCallback(google::protobuf::Message* response,
     // deserialize response
     if (!cntl->Failed())
     {
-        SCHECK(response != NULL);
-        SCHECK(cntl->ResponseBuffer());
+        //SCHECK(response != NULL);
+        //SCHECK(cntl->ResponseBuffer());
         ReadBufferPtr buffer = cntl->ResponseBuffer();
-        CompressType compress_type = cntl->ResponseCompressType();
+        //CompressType compress_type = cntl->ResponseCompressType();
         bool parse_response_return = false;
         if (compress_type == CompressTypeNone)
         {
@@ -379,15 +390,15 @@ void ClientImpl::DoneCallback(google::protobuf::Message* response,
         }
         else
         {
-            ::sofa::pbrpc::scoped_ptr<AbstractCompressedInputStream> is(
-                    get_compressed_input_stream(buffer.get(), compress_type));
-            parse_response_return = response->ParseFromZeroCopyStream(is.get());
+            //hdcs::networking::scoped_ptr<AbstractCompressedInputStream> is(
+            //        get_compressed_input_stream(buffer.get(), compress_type));
+            //parse_response_return = response->ParseFromZeroCopyStream(is.get());
         }
         if (!parse_response_return)
         {
-            LOG(ERROR) << "DoneCallback(): " << EndpointToString(cntl->RemoteEndpoint())
-                       << ": parse response message pb failed";
-            cntl->SetFailed(RPC_ERROR_PARSE_RESPONSE_MESSAGE, "parse response message pb failed");
+            //LOG(ERROR) << "DoneCallback(): " << EndpointToString(cntl->RemoteEndpoint())
+            //           << ": parse response message pb failed";
+            cntl->SetFailed(HDCS_NETWORK_ERROR_PARSE_RESPONSE_MESSAGE, "parse response message pb failed");
         }
     }
 }
@@ -395,9 +406,9 @@ void ClientImpl::DoneCallback(google::protobuf::Message* response,
 // this function will actively be called...sdh
 void ClientImpl::TimerMaintain(const PTime& now)
 {
-    SOFA_PBRPC_FUNCTION_TRACE;
+    //FUNCTION_TRACE;
 
-    int64 now_ticks = (now - _epoch_time).ticks();
+    int64_t now_ticks = (now - _epoch_time).ticks();
 
     // checks which need iterator streams
     if (_keep_alive_ticks != -1 || _slice_quota_in != -1 || _slice_quota_out != -1)
@@ -436,7 +447,7 @@ void ClientImpl::TimerMaintain(const PTime& now)
         if (_slice_quota_in != -1)
         {
             // recharge quota pool
-            _flow_controller->recharge_read_quota(_slice_quota_in);
+            //_flow_controller->recharge_read_quota(_slice_quota_in);
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
@@ -471,7 +482,7 @@ void ClientImpl::TimerMaintain(const PTime& now)
         if (_slice_quota_out != -1)
         {
             // recharge quota pool
-            _flow_controller->recharge_write_quota(_slice_quota_out);
+            //_flow_controller->recharge_write_quota(_slice_quota_out);
 
             // collect streams need to trigger
             std::vector<FlowControlItem> trigger_list;
@@ -506,9 +517,9 @@ void ClientImpl::TimerMaintain(const PTime& now)
     _last_maintain_ticks = now_ticks;
 }
 
-uint64 ClientImpl::GenerateSequenceId()
+uint64_t ClientImpl::GenerateSequenceId()
 {
-    return static_cast<uint64>(++_next_request_id);
+    return static_cast<uint64_t>(++_next_request_id);
 }
 } // 
 } // 

@@ -45,7 +45,7 @@ void Request::CallMethod(
     }
 
     google::protobuf::Closure* done = NewClosure(
-            shared_from_this(), &Request::OnCallMethodDone,
+            shared_from_this(), &Request::OnCallMethodDone, // callback: OnCallMthodDone
             method_board, controller, request, response);
     cntl->SetStartProcessTime(time_now);
     stream->increase_pending_process_count();
@@ -165,6 +165,7 @@ void Request::SendFailedResponse(
     }
 
     std::string err;
+    // virtual method: AssembleFailedResponse
     ReadBufferPtr read_buffer = AssembleFailedResponse(error_code, reason, err);
     if (!read_buffer)
     {
